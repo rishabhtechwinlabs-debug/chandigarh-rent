@@ -486,9 +486,57 @@
             </div>
           </div>
 
+          <!-- Pets Allowed Options -->
           <div class="form-group">
-            <label>Honest Renter Review / Tips</label>
-            <textarea id="rentReview" rows="3" placeholder="e.g. Electricity bill on commercial rate, good water supply, landlord lives upstairs..."></textarea>
+            <label>Pets allowed? <span class="help-text">(optional)</span></label>
+            <div class="pill-group" id="rentPetsGroup">
+              <label class="pill-btn">
+                <input type="radio" name="rentPets" value="Yes"> 🐕 Yes
+              </label>
+              <label class="pill-btn">
+                <input type="radio" name="rentPets" value="No"> 🚫 No
+              </label>
+              <label class="pill-btn active">
+                <input type="radio" name="rentPets" value="Not sure" checked> 🤷 Not sure
+              </label>
+            </div>
+          </div>
+
+          <!-- Parking & Square Footage Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>🚗 Parking for <span class="required-star">*</span></label>
+              <div class="input-suffix-wrapper">
+                <input type="number" id="rentParking" placeholder="e.g. 1" min="0" value="1" required>
+                <span class="input-suffix">cars</span>
+              </div>
+              <small class="help-text">Enter 0 if there's no parking. 1 for one spot, 2 for two, and so on.</small>
+            </div>
+            <div class="form-group">
+              <label>Square Footage <span class="help-text">(optional)</span></label>
+              <div class="input-suffix-wrapper">
+                <input type="number" id="rentSqft" placeholder="e.g. 850">
+                <span class="input-suffix">sq.ft</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label>Your email <span class="help-text">(optional)</span></label>
+            <input type="email" id="rentEmail" placeholder="e.g. you@gmail.com">
+            <small class="help-text">Never shown publicly.</small>
+          </div>
+
+          <!-- One-liner on the stay -->
+          <div class="form-group">
+            <label>One-liner on the stay <span class="help-text">(optional)</span></label>
+            <input type="text" id="rentOneLiner" placeholder="e.g. Great locality, noisy at night">
+          </div>
+
+          <div class="form-group">
+            <label>Detailed Renter Review / Tips <span class="help-text">(optional)</span></label>
+            <textarea id="rentReview" rows="2" placeholder="e.g. Electricity bill on commercial rate, good water supply, landlord lives upstairs..."></textarea>
           </div>
 
           <div class="form-group">

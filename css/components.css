@@ -240,6 +240,74 @@
   color: var(--text-subtle);
 }
 
+.required-star {
+  color: #ef4444;
+}
+
+/* Suffix Input Wrapper (e.g. "cars", "sq.ft") */
+.input-suffix-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-suffix-wrapper input {
+  padding-right: 54px !important;
+}
+
+.input-suffix {
+  position: absolute;
+  right: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Pill Option Buttons (Pets Allowed, etc.) */
+.pill-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.pill-btn input[type="radio"] {
+  display: none;
+}
+
+.pill-btn:hover {
+  border-color: var(--border-color-hover);
+  background: var(--bg-surface);
+}
+
+.pill-btn.active,
+.pill-btn:has(input[type="radio"]:checked) {
+  border-color: var(--primary);
+  background: rgba(16, 185, 129, 0.12);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
 .location-coord-badge {
   font-size: 0.76rem;
   font-family: var(--font-mono);

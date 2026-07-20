@@ -508,6 +508,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  // Pill Radio Button Group Interactivity
+  document.querySelectorAll('.pill-group').forEach(group => {
+    group.addEventListener('click', (e) => {
+      const pillBtn = e.target.closest('.pill-btn');
+      if (pillBtn) {
+        group.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        pillBtn.classList.add('active');
+        const radio = pillBtn.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+      }
+    });
+  });
+
   // ==================== FORM SUBMISSIONS WITH VALIDATION ====================
 
   // 1. Submit Anonymous Rent Pin
@@ -528,6 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const targetCoords = selectedHoldCoords || mapManager.getCenter();
+    const selectedPetRadio = document.querySelector('input[name="rentPets"]:checked');
 
     const newPin = {
       type: 'rent',
@@ -539,6 +553,11 @@ document.addEventListener('DOMContentLoaded', () => {
       furnished: document.getElementById('rentFurnished').value,
       gated: document.getElementById('rentGated').value,
       rating: Number(document.getElementById('rentRating').value),
+      pets: selectedPetRadio ? selectedPetRadio.value : 'Not sure',
+      parking: Number(document.getElementById('rentParking').value) || 0,
+      sqft: Number(document.getElementById('rentSqft').value) || null,
+      email: document.getElementById('rentEmail')?.value.trim() || '',
+      oneLiner: document.getElementById('rentOneLiner')?.value.trim() || '',
       review: document.getElementById('rentReview').value,
       lat: targetCoords.lat,
       lng: targetCoords.lng
