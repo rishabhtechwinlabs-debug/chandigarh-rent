@@ -541,8 +541,17 @@
 
           <div class="form-group">
             <label>Location Selection</label>
-            <button type="button" class="btn btn-tertiary btn-sm" id="btnPickRentLoc">📍 Use Current Map Center</button>
-            <span class="location-coord-badge" id="rentCoordsText">Selected: Center Map</span>
+            <div class="location-picker-box">
+              <div class="location-status">
+                <span>📍</span>
+                <span class="status-tag">Location set</span>
+                <span class="status-coords" id="rentCoordsText">· 30.7414, 76.7791</span>
+              </div>
+              <div class="location-actions">
+                <button type="button" class="btn-loc-action btn-use-gps" data-coords-id="rentCoordsText">Use GPS</button>
+                <button type="button" class="btn-loc-action btn-pick-map" data-coords-id="rentCoordsText">Pick on map</button>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -771,6 +780,21 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label>Location Selection</label>
+            <div class="location-picker-box">
+              <div class="location-status">
+                <span>📍</span>
+                <span class="status-tag">Location set</span>
+                <span class="status-coords" id="ownerCoordsText">· 30.7414, 76.7791</span>
+              </div>
+              <div class="location-actions">
+                <button type="button" class="btn-loc-action btn-use-gps" data-coords-id="ownerCoordsText">Use GPS</button>
+                <button type="button" class="btn-loc-action btn-pick-map" data-coords-id="ownerCoordsText">Pick on map</button>
+              </div>
+            </div>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" data-close="modalListFlat">Cancel</button>
@@ -994,6 +1018,21 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label>Location Selection</label>
+            <div class="location-picker-box">
+              <div class="location-status">
+                <span>📍</span>
+                <span class="status-tag">Location set</span>
+                <span class="status-coords" id="seekerCoordsText">· 30.7414, 76.7791</span>
+              </div>
+              <div class="location-actions">
+                <button type="button" class="btn-loc-action btn-use-gps" data-coords-id="seekerCoordsText">Use GPS</button>
+                <button type="button" class="btn-loc-action btn-pick-map" data-coords-id="seekerCoordsText">Pick on map</button>
+              </div>
+            </div>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" data-close="modalDropSeeker">Cancel</button>
@@ -1133,6 +1172,21 @@
             <label>Upload Photo of Board (Optional)</label>
             <input type="file" id="toletPhoto" accept="image/*">
             <small class="help-text">Face/Number-plate photos are auto-filtered for privacy.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Location Selection</label>
+            <div class="location-picker-box">
+              <div class="location-status">
+                <span>📍</span>
+                <span class="status-tag">Location set</span>
+                <span class="status-coords" id="toletCoordsText">· 30.7414, 76.7791</span>
+              </div>
+              <div class="location-actions">
+                <button type="button" class="btn-loc-action btn-use-gps" data-coords-id="toletCoordsText">Use GPS</button>
+                <button type="button" class="btn-loc-action btn-pick-map" data-coords-id="toletCoordsText">Pick on map</button>
+              </div>
+            </div>
           </div>
 
         </div>

@@ -364,10 +364,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (m) m.classList.remove('show');
   }
 
-  // Pick Map Center button for Rent Pin modal
-  document.getElementById('btnPickRentLoc').addEventListener('click', () => {
-    const center = mapManager.getCenter();
-    document.getElementById('rentCoordsText').textContent = `Lat: ${center.lat.toFixed(4)}, Lng: ${center.lng.toFixed(4)}`;
+  // Handle Location Picker Component Actions (Use GPS & Pick on map)
+  document.querySelectorAll('.btn-use-gps').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetSpanId = e.target.dataset.coordsId;
+      const targetSpan = document.getElementById(targetSpanId);
+      if (navigator.geolocation) {
+        btn.textContent = 'Locating...';
+        navigator.geolocation.getCurrentPosition(pos => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          selectedHoldCoords = { lat, lng };
+          if (targetSpan) targetSpan.textContent = `· ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          mapManager.flyToLocation(lat, lng, 16);
+          btn.textContent = 'Use GPS';
+        }, () => {
+          alert('GPS permission unavailable. Using current map center.');
+          const center = mapManager.getCenter();
+          selectedHoldCoords = center;
+          if (targetSpan) targetSpan.textContent = `· ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+          btn.textContent = 'Use GPS';
+        });
+      }
+    });
+  });
+
+  document.querySelectorAll('.btn-pick-map').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetSpanId = e.target.dataset.coordsId;
+      const targetSpan = document.getElementById(targetSpanId);
+      const center = mapManager.getCenter();
+      selectedHoldCoords = center;
+      if (targetSpan) targetSpan.textContent = `· ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+      alert('📍 Location set to current map center! Pan or zoom map anytime to adjust.');
+    });
   });
 
   // ==================== STRICT DATA VALIDATOR & SPAM PROTECTION ====================

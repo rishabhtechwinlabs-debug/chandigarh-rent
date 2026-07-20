@@ -333,6 +333,66 @@
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
 }
 
+/* Location Picker Box (matching screenshot: 📍 Location set · 12.9773, 77.5675 | [Use GPS] [Pick on map]) */
+.location-picker-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-top: 2px;
+}
+
+.location-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-status .status-tag {
+  color: #10b981;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.location-status .status-coords {
+  color: var(--text-muted);
+}
+
+.location-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-loc-action {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-loc-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-color-hover);
+  color: #ffffff;
+}
+
 .location-coord-badge {
   font-size: 0.76rem;
   font-family: var(--font-mono);
