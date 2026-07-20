@@ -9,12 +9,13 @@ class TricityMapManager {
     this.dataManager = dataManager;
     this.map = null;
     this.markersLayer = null;
-    this.activeTileStyle = 'dark'; // 'dark' or 'light'
+    this.activeTileStyle = 'light'; // 'light' or 'dark'
     this.tileLayers = {};
 
     // Center coordinates & Tricity Bounding Box (Chandigarh, Mohali, Panchkula, Kharar)
     this.defaultCenter = [30.7333, 76.7794];
     this.defaultZoom = 13;
+    window.currentMapManager = this;
 
     // Strict Tricity geographic bounds (South-West to North-East)
     this.tricityBounds = L.latLngBounds(
@@ -255,6 +256,67 @@ class TricityMapManager {
     const shareText = encodeURIComponent(`📍 Check out this ${pin.bhk || ''} listing in ${pin.sector} (${pin.city}) on chandigarh.rent:`);
     const shareUrl = encodeURIComponent(window.location.origin + window.location.pathname + '?pin=' + pin.id);
 
+    // Prepare Community Reviews
+    const comments = pin.comments || [];
+    if (comments.length === 0 && pin.review) {
+      comments.push({
+        id: 'cmt-init-' + pin.id,
+        author: 'Verified Renter',
+        text: pin.review,
+        rating: pin.rating || 5,
+        date: pin.date || '2026-07-20'
+      });
+      pin.comments = comments;
+    }
+
+    let commentsListHTML = '';
+    if (comments.length === 0) {
+      commentsListHTML = '<p class="no-comments-text">No reviews yet. Be the first to post a review!</p>';
+    } else {
+      commentsListHTML = comments.map(c => `
+        <div class="comment-item">
+          <div class="comment-item-header">
+            <strong>${c.author || 'Anonymous'}</strong>
+            <span class="comment-stars">${'⭐'.repeat(c.rating || 5)}</span>
+          </div>
+          <p class="comment-item-text">${c.text}</p>
+          <span class="comment-item-date">${c.date || ''}</span>
+        </div>
+      `).join('');
+    }
+
+    const commentsSectionHTML = `
+      <div class="popup-comments-wrapper">
+        <div class="comments-toggle-header" onclick="window.toggleCommentsBlock('${pin.id}')">
+          <span>💬 Reviews & Comments (${comments.length})</span>
+          <span class="comments-toggle-btn" id="cmtToggleLabel_${pin.id}">View / Add ✍️</span>
+        </div>
+
+        <div class="comments-collapsible-content" id="commentsBlock_${pin.id}" style="display: none;">
+          <div class="comments-list-box">
+            ${commentsListHTML}
+          </div>
+
+          <form class="pin-comment-form" onsubmit="window.submitPinComment(event, '${pin.id}')">
+            <div class="form-row-sm">
+              <input type="text" id="commentAuthor_${pin.id}" placeholder="Your Name / Alias" class="comment-input input-name" maxlength="30">
+              <select id="commentRating_${pin.id}" class="comment-input select-rating">
+                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                <option value="3">⭐⭐⭐ (3/5)</option>
+                <option value="2">⭐⭐ (2/5)</option>
+                <option value="1">⭐ (1/5)</option>
+              </select>
+            </div>
+            <div class="form-row-sm" style="margin-top: 4px;">
+              <input type="text" id="commentText_${pin.id}" placeholder="Write a comment or review..." required class="comment-input input-text" maxlength="200">
+              <button type="submit" class="btn btn-primary btn-xs">Post</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
     return `
       <div class="pin-popup-card">
         <div class="popup-tag-row">
@@ -265,13 +327,27 @@ class TricityMapManager {
         <div class="popup-title">${title}</div>
         ${imgTag}
         ${bodyDetails}
+        ${commentsSectionHTML}
         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border-color); font-size: 0.72rem;">
           <a href="https://api.whatsapp.com/send?text=${shareText}%20${shareUrl}" target="_blank" style="color: #25d366; text-decoration: none; font-weight: 600;">📢 WhatsApp</a>
           <button type="button" onclick="window.copyPinLink('${pin.id}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 0.72rem;">📋 Copy Link</button>
-          <button type="button" onclick="alert('Thank you! This pin has been flagged for community review.')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.72rem;">🚩 Report</button>
+          <button type="button" onclick="window.reportPin('${pin.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.72rem;">🚩 Report</button>
         </div>
       </div>
     `;
+  }
+
+  updateMarkerPopupContent(pinId) {
+    const pin = this.dataManager.pins.find(p => p.id === pinId);
+    if (!pin) return;
+
+    this.markersLayer.eachLayer(marker => {
+      if (marker.pinData && marker.pinData.id === pinId) {
+        marker.pinData = pin;
+        const newPopupHTML = this.generatePopupHTML(pin);
+        marker.setPopupContent(newPopupHTML);
+      }
+    });
   }
 
   flyToLocation(lat, lng, zoom = 15) {
@@ -417,12 +493,25 @@ class TricityMapManager {
 
 window.TricityMapManager = TricityMapManager;
 
+// Global Helper to Report Pin
+window.reportPin = function(pinId) {
+  if (window.showToast) {
+    window.showToast('Thank you! This pin has been flagged for community review.', 'success');
+  } else {
+    alert('Thank you! This pin has been flagged for community review.');
+  }
+};
+
 // Global Helper to Copy Pin Shareable Link to Clipboard
 window.copyPinLink = function(pinId) {
   const pinUrl = window.location.origin + window.location.pathname + '?pin=' + pinId;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(pinUrl).then(() => {
-      alert('📋 Pin link copied to clipboard!\n' + pinUrl);
+      if (window.showToast) {
+        window.showToast('📋 Pin link copied to clipboard!\n' + pinUrl, 'info', 4500);
+      } else {
+        alert('📋 Pin link copied to clipboard!\n' + pinUrl);
+      }
     }).catch(() => {
       prompt('Copy this pin link:', pinUrl);
     });
@@ -430,3 +519,103 @@ window.copyPinLink = function(pinId) {
     prompt('Copy this pin link:', pinUrl);
   }
 };
+
+// Global Helper to Toggle Comments Block in Leaflet Popup
+window.toggleCommentsBlock = function(pinId) {
+  const block = document.getElementById('commentsBlock_' + pinId);
+  const label = document.getElementById('cmtToggleLabel_' + pinId);
+  if (block) {
+    if (block.style.display === 'none' || !block.style.display) {
+      block.style.display = 'block';
+      if (label) label.textContent = 'Hide ✖';
+    } else {
+      block.style.display = 'none';
+      if (label) label.textContent = 'View / Add ✍️';
+    }
+  }
+};
+
+// Helper function to escape HTML special characters
+function escapeHTMLStr(str) {
+  return String(str || '').replace(/[&<>"']/g, function(m) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[m];
+  });
+}
+
+// Global Helper to Post Comment / Review on Pin
+window.submitPinComment = async function(event, pinId) {
+  event.preventDefault();
+  const authorInput = document.getElementById('commentAuthor_' + pinId);
+  const ratingInput = document.getElementById('commentRating_' + pinId);
+  const textInput = document.getElementById('commentText_' + pinId);
+
+  const text = textInput ? textInput.value.trim() : '';
+  if (!text) {
+    if (window.showToast) window.showToast('⚠️ Please enter a comment or review text.', 'warning');
+    return;
+  }
+
+  const author = authorInput && authorInput.value.trim() ? authorInput.value.trim() : 'Anonymous Renter';
+  const rating = ratingInput ? Number(ratingInput.value) : 5;
+
+  const newComment = await window.rentDataManager.addCommentToPin(pinId, { author, text, rating });
+
+  if (newComment) {
+    if (window.showToast) {
+      window.showToast('🎉 Review posted successfully!', 'success');
+    }
+
+    // 1. Instant Live DOM update of open popup
+    const commentsBlock = document.getElementById('commentsBlock_' + pinId);
+    if (commentsBlock) {
+      commentsBlock.style.display = 'block';
+
+      const listBox = commentsBlock.querySelector('.comments-list-box');
+      if (listBox) {
+        // Remove "No reviews yet" message if present
+        const noComments = listBox.querySelector('.no-comments-text');
+        if (noComments) noComments.remove();
+
+        // Create new comment element
+        const commentEl = document.createElement('div');
+        commentEl.className = 'comment-item';
+        commentEl.style.animation = 'fadeInDown 0.3s ease';
+        commentEl.innerHTML = `
+          <div class="comment-item-header">
+            <strong>${escapeHTMLStr(newComment.author)}</strong>
+            <span class="comment-stars">${'⭐'.repeat(newComment.rating || 5)}</span>
+          </div>
+          <p class="comment-item-text">${escapeHTMLStr(newComment.text)}</p>
+          <span class="comment-item-date">${newComment.date || ''}</span>
+        `;
+        // Insert as top comment immediately
+        listBox.insertBefore(commentEl, listBox.firstChild);
+      }
+
+      // Update header count text
+      const pin = window.rentDataManager.pins.find(p => p.id === pinId);
+      const headerSpan = commentsBlock.previousElementSibling?.querySelector('span:first-child');
+      if (headerSpan && pin && pin.comments) {
+        headerSpan.textContent = `💬 Reviews & Comments (${pin.comments.length})`;
+      }
+
+      const toggleLabel = document.getElementById('cmtToggleLabel_' + pinId);
+      if (toggleLabel) toggleLabel.textContent = 'Hide ✖';
+
+      // Reset text field
+      if (textInput) textInput.value = '';
+    }
+
+    // 2. Sync Leaflet popup cached content
+    if (window.currentMapManager) {
+      window.currentMapManager.updateMarkerPopupContent(pinId);
+    }
+  }
+};
+

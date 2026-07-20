@@ -721,8 +721,9 @@ input[type="range"] {
   }
 
   .tricity-badge,
-  .desktop-only-text {
-    display: none;
+  .desktop-only-text,
+  .hide-mobile {
+    display: none !important;
   }
 
   .city-selector-group {

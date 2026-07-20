@@ -111,6 +111,51 @@ class RentDataManager {
     return pin;
   }
 
+  async addCommentToPin(pinId, commentData) {
+    const pin = this.pins.find(p => p.id === pinId);
+    if (!pin) return null;
+
+    if (!pin.comments) {
+      pin.comments = [];
+    }
+
+    const newComment = {
+      id: 'cmt-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+      author: commentData.author || 'Anonymous Renter',
+      text: String(commentData.text).trim(),
+      rating: Number(commentData.rating) || 5,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    pin.comments.unshift(newComment);
+    this.save();
+
+    // Sync comment to Supabase Cloud DB if available
+    if (window.SUPABASE_CONFIG?.url && window.SUPABASE_CONFIG?.anonKey) {
+      try {
+        await fetch(`${window.SUPABASE_CONFIG.url}/rest/v1/comments`, {
+          method: 'POST',
+          headers: {
+            'apikey': window.SUPABASE_CONFIG.anonKey,
+            'Authorization': `Bearer ${window.SUPABASE_CONFIG.anonKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            pin_id: pinId,
+            author: newComment.author,
+            text: newComment.text,
+            rating: newComment.rating,
+            created_at: newComment.date
+          })
+        });
+      } catch (e) {
+        console.warn('Could not sync comment to cloud DB', e);
+      }
+    }
+
+    return newComment;
+  }
+
   exportDataJSON() {
     return JSON.stringify(this.pins, null, 2);
   }

@@ -3,6 +3,64 @@
  * Manages reactive UI state, user input event handlers, modal dialogs, and map sync.
  */
 
+/**
+ * Global Toast Notification Controller
+ * Replaces native browser alert() with non-blocking, modern glassmorphic toasts.
+ */
+function showToast(message, type = 'info', duration = 3800) {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+
+  const icons = {
+    success: '✅',
+    error: '⚠️',
+    warning: '⚠️',
+    info: '📋'
+  };
+
+  const icon = icons[type] || '💡';
+
+  toast.innerHTML = `
+    <span class="toast-icon">${icon}</span>
+    <div class="toast-content">${String(message).replace(/\n/g, '<br>')}</div>
+    <button class="toast-close" type="button" aria-label="Close">&times;</button>
+  `;
+
+  const closeBtn = toast.querySelector('.toast-close');
+  closeBtn.addEventListener('click', () => dismissToast(toast));
+
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  const timer = setTimeout(() => {
+    dismissToast(toast);
+  }, duration);
+
+  toast.addEventListener('mouseenter', () => clearTimeout(timer));
+}
+
+function dismissToast(toast) {
+  if (!toast || toast.classList.contains('hide')) return;
+  toast.classList.remove('show');
+  toast.classList.add('hide');
+  toast.addEventListener('transitionend', () => {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, { once: true });
+}
+
+window.showToast = showToast;
+
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize Map
   const mapManager = new window.TricityMapManager('map', window.rentDataManager);
@@ -17,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     studentFriendly: false,
     furnishedOnly: false,
     searchQuery: '',
-    theme: localStorage.getItem('chandigarh_theme') || 'dark'
+    theme: localStorage.getItem('chandigarh_theme') || 'light'
   };
 
   // Set Theme
@@ -246,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.geolocation.getCurrentPosition(pos => {
         mapManager.flyToLocation(pos.coords.latitude, pos.coords.longitude, 15);
       }, err => {
-        alert('Geolocation permission denied or unavailable. Centering on Chandigarh Sector 17.');
+        showToast('Geolocation permission denied or unavailable. Centering on Chandigarh Sector 17.', 'warning');
         mapManager.flyToLocation(30.7414, 76.7791, 15);
       });
     }
@@ -646,12 +704,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const amount = document.getElementById('rentAmount').value;
 
     if (!TricityValidator.isValidSector(sector)) {
-      alert('⚠️ Please select an official Sector/Phase or enter a genuine sub-location (no random text like dasdasda).');
+      showToast('⚠️ Please select an official Sector/Phase or enter a genuine sub-location.', 'warning');
       return;
     }
 
     if (!TricityValidator.isValidRent(amount, bhk)) {
-      alert(`⚠️ Please enter a realistic monthly rent amount for ${bhk} (e.g., ₹5,000 - ₹80,000).`);
+      showToast(`⚠️ Please enter a realistic monthly rent amount for ${bhk} (e.g., ₹5,000 - ₹80,000).`, 'warning');
       return;
     }
 
@@ -684,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('formDropRent').reset();
     document.getElementById('rentSectorCustom').style.display = 'none';
     applyFiltersAndRender();
-    alert('🎉 Rent pin submitted successfully!');
+    showToast('🎉 Rent pin submitted successfully!', 'success');
   });
 
   // 2. Submit Direct Owner Listing
@@ -697,22 +755,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = document.getElementById('ownerName').value;
 
     if (!TricityValidator.isValidSector(sector)) {
-      alert('⚠️ Please select an official Sector/Phase or enter a genuine sub-location.');
+      showToast('⚠️ Please select an official Sector/Phase or enter a genuine sub-location.', 'warning');
       return;
     }
 
     if (!TricityValidator.isValidRent(amount, bhk)) {
-      alert(`⚠️ Please enter a realistic rent amount for ${bhk}.`);
+      showToast(`⚠️ Please enter a realistic rent amount for ${bhk}.`, 'warning');
       return;
     }
 
     if (!TricityValidator.isValidPhone(phone)) {
-      alert('⚠️ Please enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).');
+      showToast('⚠️ Please enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).', 'warning');
       return;
     }
 
     if (!TricityValidator.isValidName(name)) {
-      alert('⚠️ Please enter your valid full name.');
+      showToast('⚠️ Please enter your valid full name.', 'warning');
       return;
     }
 
@@ -748,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modalListFlat');
     document.getElementById('formListFlat').reset();
     applyFiltersAndRender();
-    alert('🎉 Zero Brokerage Flat listing published on map!');
+    showToast('🎉 Zero Brokerage Flat listing published on map!', 'success');
   });
 
   // 3. Submit Flat Seeker Pin
@@ -761,17 +819,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = document.getElementById('seekerPhone').value.trim();
 
     if (!TricityValidator.isValidSector(sector)) {
-      alert('⚠️ Please select an official Sector/Phase or enter a genuine custom sub-location.');
+      showToast('⚠️ Please select an official Sector/Phase or enter a genuine custom sub-location.', 'warning');
       return;
     }
 
     if (!TricityValidator.isValidRent(budget, bhk)) {
-      alert(`⚠️ Please enter a realistic max budget per room for ${bhk}.`);
+      showToast(`⚠️ Please enter a realistic max budget per room for ${bhk}.`, 'warning');
       return;
     }
 
     if (!TricityValidator.isValidPhone(phone)) {
-      alert('⚠️ Please enter a valid 10-digit mobile number.');
+      showToast('⚠️ Please enter a valid 10-digit mobile number.', 'warning');
       return;
     }
 
@@ -805,14 +863,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('formDropSeeker').reset();
     document.getElementById('seekerSectorCustom').style.display = 'none';
     applyFiltersAndRender();
-    alert('🎉 Flat Seeker pin dropped successfully on map!');
+    showToast('🎉 Flat Seeker pin dropped successfully on map!', 'success');
 
     // Check for matches!
     const matches = window.tricityMatcher.findMatchesForSeeker(newPin);
     if (matches.length > 0) {
-      alert(`🎉 Seeker pin dropped! We found ${matches.length} matching available flat(s) in your area!`);
+      showToast(`🎉 Seeker pin dropped! We found ${matches.length} matching available flat(s) in your area!`, 'success', 5000);
     } else {
-      alert('🎉 Seeker pin dropped! Owners will contact you as soon as matching flats open up.');
+      showToast('🎉 Seeker pin dropped! Owners will contact you as soon as matching flats open up.', 'info', 4500);
     }
   });
 
@@ -823,12 +881,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = document.getElementById('toletPhone').value;
 
     if (!TricityValidator.isValidSector(sector)) {
-      alert('⚠️ Please select an official Sector/Phase or enter a genuine sub-location.');
+      showToast('⚠️ Please select an official Sector/Phase or enter a genuine sub-location.', 'warning');
       return;
     }
 
     if (!TricityValidator.isValidPhone(phone)) {
-      alert('⚠️ Please enter a valid 10-digit Indian phone number seen on the board.');
+      showToast('⚠️ Please enter a valid 10-digit Indian phone number seen on the board.', 'warning');
       return;
     }
 
@@ -854,7 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('formSpotToLet').reset();
     document.getElementById('toletSectorCustom').style.display = 'none';
     applyFiltersAndRender();
-    alert('🎉 Spotted To-Let board added to map! Thanks for helping fellow renters skip brokers.');
+    showToast('🎉 Spotted To-Let board added to map! Thanks for helping fellow renters skip brokers.', 'success', 5000);
   });
 
   // ==================== CORE RENDER CONTROLLER ====================
