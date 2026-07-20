@@ -181,6 +181,12 @@ class TricityMapManager {
     const popupContent = this.generatePopupHTML(pin);
     marker.bindPopup(popupContent);
 
+    marker.on('popupopen', () => {
+      setTimeout(() => {
+        if (window.lucide) lucide.createIcons();
+      }, 40);
+    });
+
     return marker;
   }
 
@@ -191,59 +197,59 @@ class TricityMapManager {
     let bodyDetails = '';
 
     if (pin.type === 'rent') {
-      typeBadge = '<span class="popup-badge popup-badge-rent">🟢 Rent Paid</span>';
+      typeBadge = '<span class="popup-badge popup-badge-rent"><i data-lucide="circle-dollar-sign"></i> Rent Paid</span>';
       priceText = '₹' + pin.rent.toLocaleString('en-IN') + '/mo';
       bodyDetails = `
         <div class="popup-detail-row">
-          <span>🏠 ${pin.bhk}</span>
-          <span>🔒 ${pin.gated === 'Yes' ? 'Gated' : 'Open Sector'}</span>
-          <span>✨ ${pin.furnished}</span>
+          <span><i data-lucide="home"></i> ${pin.bhk}</span>
+          <span><i data-lucide="${pin.gated === 'Yes' ? 'shield-check' : 'shield'}"></i> ${pin.gated === 'Yes' ? 'Gated' : 'Open Sector'}</span>
+          <span><i data-lucide="sparkles"></i> ${pin.furnished}</span>
         </div>
         <div class="popup-detail-row">
-          <span>⭐ Landlord Rating: ${pin.rating}/5</span>
+          <span><i data-lucide="star" class="icon-star"></i> Landlord Rating: ${pin.rating}/5</span>
         </div>
         ${pin.review ? `<div class="popup-review-quote">"${pin.review}"</div>` : ''}
       `;
     } else if (pin.type === 'owner') {
-      typeBadge = '<span class="popup-badge popup-badge-owner">🔵 Zero Broker Flat</span>';
+      typeBadge = '<span class="popup-badge popup-badge-owner"><i data-lucide="home"></i> Zero Broker Flat</span>';
       priceText = '₹' + pin.rent.toLocaleString('en-IN') + '/mo';
       const cleanPhone = (pin.phone || '').replace(/\D/g, '');
       const waMsg = encodeURIComponent(`Hi ${pin.contactName || ''}! I saw your ${pin.bhk} listing for ${pin.sector} on chandigarh.rent and I'm interested.`);
       bodyDetails = `
         <div class="popup-detail-row">
-          <span>🏠 ${pin.bhk} (${pin.ownerType || 'Direct'})</span>
+          <span><i data-lucide="home"></i> ${pin.bhk} (${pin.ownerType || 'Direct'})</span>
         </div>
         <div class="popup-detail-row">
-          <span>👤 Pref: ${pin.tenantPref || 'Anyone'}</span>
+          <span><i data-lucide="user"></i> Pref: ${pin.tenantPref || 'Anyone'}</span>
         </div>
         <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 4px;">${pin.desc || ''}</p>
         <div style="display: flex; gap: 6px; margin-top: 6px;">
-          <a href="tel:${pin.phone}" class="btn btn-primary btn-sm" style="flex: 1;">📞 Call</a>
-          ${cleanPhone ? `<a href="https://wa.me/91${cleanPhone}?text=${waMsg}" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1; background: #25d366; color: #fff; border: none;">💬 WhatsApp</a>` : ''}
+          <a href="tel:${pin.phone}" class="btn btn-primary btn-sm" style="flex: 1;"><i data-lucide="phone"></i> Call</a>
+          ${cleanPhone ? `<a href="https://wa.me/91${cleanPhone}?text=${waMsg}" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1; background: #25d366; color: #fff; border: none;"><i data-lucide="message-circle"></i> WhatsApp</a>` : ''}
         </div>
       `;
     } else if (pin.type === 'seeker') {
-      typeBadge = '<span class="popup-badge popup-badge-seeker">🟣 Seeker Requirement</span>';
+      typeBadge = '<span class="popup-badge popup-badge-seeker"><i data-lucide="user-check"></i> Seeker Requirement</span>';
       priceText = 'Budget: ₹' + pin.budget.toLocaleString('en-IN') + '/mo';
       bodyDetails = `
         <div class="popup-detail-row">
-          <span>🏠 Needs ${pin.bhk}</span>
-          <span>📅 Move Date: ${pin.moveDate || 'Immediate'}</span>
+          <span><i data-lucide="home"></i> Needs ${pin.bhk}</span>
+          <span><i data-lucide="calendar"></i> Move Date: ${pin.moveDate || 'Immediate'}</span>
         </div>
         <div class="popup-detail-row">
-          <span>👤 Profile: ${pin.profile}</span>
+          <span><i data-lucide="user"></i> Profile: ${pin.profile}</span>
         </div>
-        <a href="mailto:${pin.contact}" class="btn btn-secondary btn-sm popup-action-btn">✉️ Contact ${pin.seekerName}</a>
+        <a href="mailto:${pin.contact}" class="btn btn-secondary btn-sm popup-action-btn"><i data-lucide="mail"></i> Contact ${pin.seekerName}</a>
       `;
     } else if (pin.type === 'tolet') {
-      typeBadge = '<span class="popup-badge popup-badge-tolet">🟡 Spotted To-Let</span>';
+      typeBadge = '<span class="popup-badge popup-badge-tolet"><i data-lucide="camera"></i> Spotted To-Let</span>';
       priceText = 'Spotted Board';
       bodyDetails = `
         <div class="popup-detail-row">
-          <span>📍 Location: ${pin.sector}</span>
+          <span><i data-lucide="map-pin"></i> Location: ${pin.sector}</span>
         </div>
         <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 4px;">${pin.notes || ''}</p>
-        <a href="tel:${pin.phone}" class="btn btn-primary btn-sm popup-action-btn">📞 Call Number on Board (${pin.phone})</a>
+        <a href="tel:${pin.phone}" class="btn btn-primary btn-sm popup-action-btn"><i data-lucide="phone"></i> Call Number on Board (${pin.phone})</a>
       `;
     }
 
@@ -288,8 +294,8 @@ class TricityMapManager {
     const commentsSectionHTML = `
       <div class="popup-comments-wrapper">
         <div class="comments-toggle-header" onclick="window.toggleCommentsBlock('${pin.id}')">
-          <span>💬 Reviews & Comments (${comments.length})</span>
-          <span class="comments-toggle-btn" id="cmtToggleLabel_${pin.id}">View / Add ✍️</span>
+          <span><i data-lucide="message-square"></i> Reviews & Comments (${comments.length})</span>
+          <span class="comments-toggle-btn" id="cmtToggleLabel_${pin.id}">View / Add <i data-lucide="edit-3"></i></span>
         </div>
 
         <div class="comments-collapsible-content" id="commentsBlock_${pin.id}" style="display: none;">
@@ -329,9 +335,9 @@ class TricityMapManager {
         ${bodyDetails}
         ${commentsSectionHTML}
         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border-color); font-size: 0.72rem;">
-          <a href="https://api.whatsapp.com/send?text=${shareText}%20${shareUrl}" target="_blank" style="color: #25d366; text-decoration: none; font-weight: 600;">📢 WhatsApp</a>
-          <button type="button" onclick="window.copyPinLink('${pin.id}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 0.72rem;">📋 Copy Link</button>
-          <button type="button" onclick="window.reportPin('${pin.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.72rem;">🚩 Report</button>
+          <a href="https://api.whatsapp.com/send?text=${shareText}%20${shareUrl}" target="_blank" style="color: #25d366; text-decoration: none; font-weight: 600;"><i data-lucide="share-2"></i> WhatsApp</a>
+          <button type="button" onclick="window.copyPinLink('${pin.id}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 0.72rem;"><i data-lucide="copy"></i> Copy Link</button>
+          <button type="button" onclick="window.reportPin('${pin.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.72rem;"><i data-lucide="flag"></i> Report</button>
         </div>
       </div>
     `;
@@ -527,11 +533,12 @@ window.toggleCommentsBlock = function(pinId) {
   if (block) {
     if (block.style.display === 'none' || !block.style.display) {
       block.style.display = 'block';
-      if (label) label.textContent = 'Hide ✖';
+      if (label) label.innerHTML = 'Hide <i data-lucide="x"></i>';
     } else {
       block.style.display = 'none';
-      if (label) label.textContent = 'View / Add ✍️';
+      if (label) label.innerHTML = 'View / Add <i data-lucide="edit-3"></i>';
     }
+    if (window.lucide) lucide.createIcons();
   }
 };
 
@@ -602,11 +609,12 @@ window.submitPinComment = async function(event, pinId) {
       const pin = window.rentDataManager.pins.find(p => p.id === pinId);
       const headerSpan = commentsBlock.previousElementSibling?.querySelector('span:first-child');
       if (headerSpan && pin && pin.comments) {
-        headerSpan.textContent = `💬 Reviews & Comments (${pin.comments.length})`;
+        headerSpan.innerHTML = `<i data-lucide="message-square"></i> Reviews & Comments (${pin.comments.length})`;
       }
 
       const toggleLabel = document.getElementById('cmtToggleLabel_' + pinId);
-      if (toggleLabel) toggleLabel.textContent = 'Hide ✖';
+      if (toggleLabel) toggleLabel.innerHTML = 'Hide <i data-lucide="x"></i>';
+      if (window.lucide) lucide.createIcons();
 
       // Reset text field
       if (textInput) textInput.value = '';

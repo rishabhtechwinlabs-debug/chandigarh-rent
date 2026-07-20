@@ -20,13 +20,13 @@ function showToast(message, type = 'info', duration = 3800) {
   toast.className = `toast toast-${type}`;
 
   const icons = {
-    success: '✅',
-    error: '⚠️',
-    warning: '⚠️',
-    info: '📋'
+    success: '<i data-lucide="check-circle-2" class="icon-rent"></i>',
+    error: '<i data-lucide="alert-circle" style="color:#ef4444;"></i>',
+    warning: '<i data-lucide="alert-triangle" class="icon-zap"></i>',
+    info: '<i data-lucide="info" class="icon-owner"></i>'
   };
 
-  const icon = icons[type] || '💡';
+  const icon = icons[type] || '<i data-lucide="help-circle"></i>';
 
   toast.innerHTML = `
     <span class="toast-icon">${icon}</span>
@@ -38,6 +38,7 @@ function showToast(message, type = 'info', duration = 3800) {
   closeBtn.addEventListener('click', () => dismissToast(toast));
 
   container.appendChild(toast);
+  if (window.lucide) lucide.createIcons();
 
   requestAnimationFrame(() => {
     toast.classList.add('show');
@@ -85,6 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial Filter Apply & Render
   applyFiltersAndRender();
+
+  // Primary Database Fetch: Sync live pins from Supabase Cloud DB
+  window.rentDataManager.syncFromCloud().then(() => {
+    applyFiltersAndRender();
+  });
 
   // ==================== EVENT LISTENERS ====================
 
@@ -281,7 +287,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateThemeIcon() {
     const iconSpan = document.querySelector('.theme-icon');
     if (iconSpan) {
-      iconSpan.textContent = state.theme === 'dark' ? '🌙' : '☀️';
+      const iconName = state.theme === 'dark' ? 'sun' : 'moon';
+      iconSpan.innerHTML = `<i data-lucide="${iconName}"></i>`;
+      if (window.lucide) lucide.createIcons();
     }
   }
 
@@ -938,6 +946,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cntOwner').textContent = allPins.filter(p => p.type === 'owner').length;
     document.getElementById('cntSeeker').textContent = allPins.filter(p => p.type === 'seeker').length;
     document.getElementById('cntTolet').textContent = allPins.filter(p => p.type === 'tolet').length;
+
+    if (window.lucide) lucide.createIcons();
   }
 
   function populateSectorStatsTable() {

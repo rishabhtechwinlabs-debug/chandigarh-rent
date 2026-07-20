@@ -63,6 +63,39 @@
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
+/* Lucide Vector Icons Universal Styling */
+i[data-lucide], svg.lucide {
+  width: 1.1em;
+  height: 1.1em;
+  stroke-width: 2.2;
+  vertical-align: -0.16em;
+  display: inline-block;
+  stroke: currentColor;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.btn i[data-lucide], .btn svg.lucide {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+}
+
+.map-ctl-btn i[data-lucide], .map-ctl-btn svg.lucide {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.18em;
+}
+
+.icon-rent { color: var(--primary) !important; }
+.icon-owner { color: var(--accent-blue) !important; }
+.icon-seeker { color: var(--accent-purple) !important; }
+.icon-tolet { color: var(--accent-amber) !important; }
+
+.icon-star { color: #f59e0b; fill: #f59e0b; }
+.icon-hot { color: #ef4444; }
+.icon-zap { color: #f59e0b; }
+
 /* Reset & Universal Setup */
 *, *::before, *::after {
   box-sizing: border-box;

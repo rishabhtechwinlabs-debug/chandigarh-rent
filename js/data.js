@@ -49,7 +49,7 @@ class RentDataManager {
   async syncFromCloud() {
     if (!window.SUPABASE_CONFIG?.url || !window.SUPABASE_CONFIG?.anonKey) return;
     try {
-      const res = await fetch(`${window.SUPABASE_CONFIG.url}/rest/v1/pins?select=*`, {
+      const res = await fetch(`${window.SUPABASE_CONFIG.url}/rest/v1/pins?select=*&order=id.desc`, {
         headers: {
           'apikey': window.SUPABASE_CONFIG.anonKey,
           'Authorization': `Bearer ${window.SUPABASE_CONFIG.anonKey}`
@@ -57,18 +57,52 @@ class RentDataManager {
       });
       if (res.ok) {
         const cloudPins = await res.json();
-        if (cloudPins && cloudPins.length > 0) {
-          const existingIds = new Set(this.pins.map(p => p.id));
+        if (cloudPins && Array.isArray(cloudPins) && cloudPins.length > 0) {
           cloudPins.forEach(cp => {
-            if (!existingIds.has(cp.id)) {
-              this.pins.unshift(cp);
+            // Restore seekerName from contactName if type is seeker
+            if (cp.type === 'seeker' && cp.contactName && !cp.seekerName) {
+              cp.seekerName = cp.contactName;
+            }
+
+            // Restore extra metadata (comments & photoData) from JSON notes column
+            if (cp.notes && typeof cp.notes === 'string' && cp.notes.trim().startsWith('{')) {
+              try {
+                const meta = JSON.parse(cp.notes);
+                if (meta.comments && Array.isArray(meta.comments)) cp.comments = meta.comments;
+                if (meta.photoData) cp.photoData = meta.photoData;
+              } catch (e) {}
+            } else if (cp.notes && typeof cp.notes === 'string' && cp.notes.trim().startsWith('[')) {
+              try {
+                cp.comments = JSON.parse(cp.notes);
+              } catch (e) {
+                cp.comments = [];
+              }
+            }
+
+            if (!cp.comments || cp.comments.length === 0) {
+              if (cp.review) {
+                cp.comments = [{
+                  id: 'cmt-init-' + cp.id,
+                  author: 'Verified Renter',
+                  text: cp.review,
+                  rating: cp.rating || 5,
+                  date: cp.date || '2026-07-20'
+                }];
+              } else {
+                cp.comments = [];
+              }
             }
           });
+
+          // Cloud DB is the primary source of truth
+          const cloudIdSet = new Set(cloudPins.map(p => p.id));
+          const localOnly = this.pins.filter(p => !cloudIdSet.has(p.id));
+          this.pins = [...cloudPins, ...localOnly];
           this.save();
         }
       }
     } catch (e) {
-      console.warn('Cloud database sync offline, using local storage dataset.', e);
+      console.warn('Cloud database sync offline, using local storage dataset fallback.', e);
     }
   }
 
@@ -85,14 +119,58 @@ class RentDataManager {
     const pin = {
       id: 'pin-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
       date: new Date().toISOString().split('T')[0],
+      comments: [],
       ...newPinData
     };
+    if (newPinData.review) {
+      pin.comments = [{
+        id: 'cmt-' + Date.now().toString(36),
+        author: 'Verified Renter',
+        text: newPinData.review,
+        rating: newPinData.rating || 5,
+        date: pin.date
+      }];
+    }
+
     this.pins.unshift(pin);
     this.save();
 
-    // Post to Supabase Cloud DB if configured
+    // Format payload for exact Supabase DB schema
     if (window.SUPABASE_CONFIG?.url && window.SUPABASE_CONFIG?.anonKey) {
       try {
+        const extraMeta = {
+          comments: pin.comments || [],
+          photoData: pin.photoData || null
+        };
+
+        const dbPayload = {
+          id: pin.id,
+          type: pin.type || 'rent',
+          city: pin.city || 'Chandigarh',
+          sector: pin.sector || 'Sector 15',
+          lat: pin.lat ? Number(pin.lat) : 30.7414,
+          lng: pin.lng ? Number(pin.lng) : 76.7791,
+          bhk: pin.bhk || null,
+          rent: pin.rent ? Number(pin.rent) : null,
+          budget: pin.budget ? Number(pin.budget) : null,
+          maintenance: pin.maintenance !== undefined && pin.maintenance !== null ? Number(pin.maintenance) : null,
+          deposit: pin.deposit ? Number(pin.deposit) : null,
+          furnished: pin.furnished || null,
+          gated: pin.gated || null,
+          rating: pin.rating ? Number(pin.rating) : null,
+          review: pin.review || null,
+          desc: pin.desc || null,
+          tenantPref: pin.tenantPref || null,
+          ownerType: pin.ownerType || null,
+          contactName: pin.contactName || pin.seekerName || null,
+          phone: pin.phone || null,
+          contact: pin.contact || null,
+          moveDate: pin.moveDate || null,
+          profile: pin.profile || null,
+          notes: JSON.stringify(extraMeta),
+          date: pin.date
+        };
+
         await fetch(`${window.SUPABASE_CONFIG.url}/rest/v1/pins`, {
           method: 'POST',
           headers: {
@@ -101,7 +179,7 @@ class RentDataManager {
             'Content-Type': 'application/json',
             'Prefer': 'return=minimal'
           },
-          body: JSON.stringify(pin)
+          body: JSON.stringify(dbPayload)
         });
       } catch (e) {
         console.warn('Could not post pin to cloud DB', e);
@@ -128,24 +206,32 @@ class RentDataManager {
     };
 
     pin.comments.unshift(newComment);
+
+    const extraMeta = {
+      comments: pin.comments,
+      photoData: pin.photoData || null
+    };
+    pin.notes = JSON.stringify(extraMeta);
+    pin.review = newComment.text;
+    pin.rating = newComment.rating;
+
     this.save();
 
     // Sync comment to Supabase Cloud DB if available
     if (window.SUPABASE_CONFIG?.url && window.SUPABASE_CONFIG?.anonKey) {
       try {
-        await fetch(`${window.SUPABASE_CONFIG.url}/rest/v1/comments`, {
-          method: 'POST',
+        await fetch(`${window.SUPABASE_CONFIG.url}/rest/v1/pins?id=eq.${pinId}`, {
+          method: 'PATCH',
           headers: {
             'apikey': window.SUPABASE_CONFIG.anonKey,
             'Authorization': `Bearer ${window.SUPABASE_CONFIG.anonKey}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
           },
           body: JSON.stringify({
-            pin_id: pinId,
-            author: newComment.author,
-            text: newComment.text,
-            rating: newComment.rating,
-            created_at: newComment.date
+            notes: pin.notes,
+            review: newComment.text,
+            rating: newComment.rating
           })
         });
       } catch (e) {

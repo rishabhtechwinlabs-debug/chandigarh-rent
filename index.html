@@ -87,24 +87,27 @@
   <!-- Custom Styling -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/components.css">
+
+  <!-- Lucide Vector Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
   <!-- Floating Map Location Picker Banner (Active when picking location on map) -->
   <div id="mapPickerBanner" class="map-picker-banner">
     <div class="map-picker-banner-text">
-      <span>📍 Move map or click to set pin location:</span>
+      <span><i data-lucide="map-pin"></i> Move map or click to set pin location:</span>
       <span id="mapPickerCoordsText" class="map-picker-banner-coords">30.7414, 76.7791</span>
     </div>
     <div class="map-picker-actions">
       <button type="button" class="btn btn-secondary btn-sm" id="btnCancelMapPicker">Cancel</button>
-      <button type="button" class="btn btn-primary btn-sm" id="btnConfirmMapPicker">✅ Confirm Location</button>
+      <button type="button" class="btn btn-primary btn-sm" id="btnConfirmMapPicker"><i data-lucide="check"></i> Confirm Location</button>
     </div>
   </div>
 
   <!-- Center Screen Pin Marker for Location Picker -->
   <div id="mapPickerCenterPin" class="map-picker-center-pin">
-    <div class="picker-pin-icon">📍</div>
+    <div class="picker-pin-icon"><i data-lucide="map-pin"></i></div>
     <div class="picker-pin-shadow"></div>
     <div class="picker-pin-pulse"></div>
   </div>
@@ -113,7 +116,7 @@
   <header class="app-header">
     <div class="header-left">
       <a href="#" class="brand-logo">
-        <span class="logo-icon">📍</span>
+        <span class="logo-icon"><i data-lucide="map-pin"></i></span>
         <span class="logo-text">chandigarh<span class="logo-accent">.rent</span></span>
         <span class="tricity-badge">TRICITY</span>
       </a>
@@ -142,45 +145,45 @@
     <!-- Action Buttons -->
     <div class="header-right">
       <button class="btn btn-secondary btn-sm" id="btnOpenMobileFilters" title="Toggle Filters">
-        <span class="btn-icon">🎛️</span> <span class="desktop-only-text">Filters</span>
+        <span class="btn-icon"><i data-lucide="sliders-horizontal"></i></span> <span class="desktop-only-text">Filters</span>
       </button>
 
       <button class="btn btn-secondary btn-sm" id="btnAreaStats">
-        <span class="btn-icon">📊</span> Area Rent Stats
+        <span class="btn-icon"><i data-lucide="bar-chart-3"></i></span> Area Rent Stats
       </button>
 
       <button class="btn btn-secondary btn-sm" id="btnHeaderHowToUse" title="How to Use Guide">
-        <span class="btn-icon">💡</span> <span class="hide-mobile">How to Use</span>
+        <span class="btn-icon"><i data-lucide="help-circle"></i></span> <span class="hide-mobile">How to Use</span>
       </button>
 
       <div class="dropdown-container">
         <button class="btn btn-primary btn-sm" id="btnMainAction">
-          <span class="btn-icon">➕</span> <span class="main-btn-label">Add Pin</span>
+          <span class="btn-icon"><i data-lucide="plus"></i></span> <span class="main-btn-label">Add Pin</span>
         </button>
         <div class="dropdown-menu" id="addPinDropdown">
           <a href="#" class="dropdown-item" id="actionDropRent">
-            <span class="item-icon">🟢</span>
+            <span class="item-icon icon-rent"><i data-lucide="circle-dollar-sign"></i></span>
             <div>
               <strong>Drop Anonymous Rent</strong>
               <small>Share what you pay to help other renters</small>
             </div>
           </a>
           <a href="#" class="dropdown-item" id="actionListFlat">
-            <span class="item-icon">🔵</span>
+            <span class="item-icon icon-owner"><i data-lucide="home"></i></span>
             <div>
               <strong>List Flat / Flatmate</strong>
               <small>Post direct owner listing (Zero Brokerage)</small>
             </div>
           </a>
           <a href="#" class="dropdown-item" id="actionDropSeeker">
-            <span class="item-icon">🟣</span>
+            <span class="item-icon icon-seeker"><i data-lucide="user-check"></i></span>
             <div>
               <strong>Drop Seeker Pin</strong>
               <small>Find a flat or flatmate in your budget</small>
             </div>
           </a>
           <a href="#" class="dropdown-item" id="actionSpotToLet">
-            <span class="item-icon">🟡</span>
+            <span class="item-icon icon-tolet"><i data-lucide="camera"></i></span>
             <div>
               <strong>Spot a "To-Let" Board</strong>
               <small>Upload photo of board seen in street</small>
@@ -190,7 +193,7 @@
       </div>
 
       <button class="theme-toggle-btn" id="btnThemeToggle" title="Toggle Light/Dark Theme">
-        <span class="theme-icon">🌙</span>
+        <span class="theme-icon"><i data-lucide="moon" id="themeLucideIcon"></i></span>
       </button>
     </div>
   </header>
@@ -272,7 +275,7 @@
 
       <!-- Quick Location Shortcuts -->
       <div class="filter-section">
-        <label class="section-label">🔥 Hot Hubs & Sectors</label>
+        <label class="section-label"><i data-lucide="flame" class="icon-hot"></i> Hot Hubs & Sectors</label>
         <div class="sector-chips">
           <button class="sector-chip" data-lat="30.7578" data-lng="76.7684" data-zoom="15">Sector 15 (PU Student Hub)</button>
           <button class="sector-chip" data-lat="30.7247" data-lng="76.7711" data-zoom="15">Sector 35 (Market Hub)</button>
@@ -308,7 +311,7 @@
 
       <!-- Footer Info -->
       <div class="sidebar-footer">
-        <p>⚡ 100% Free & Transparent rental dataset for Chandigarh & Mohali.</p>
+        <p><i data-lucide="zap" class="icon-zap"></i> 100% Free & Transparent rental dataset for Chandigarh & Mohali.</p>
         <p>No login needed · Zero Brokerage · <a href="#" id="btnSidebarHowToUse" style="color: var(--primary); font-weight:600; text-decoration: underline;">How to Use</a></p>
       </div>
     </aside>
@@ -322,29 +325,29 @@
 
       <!-- Floating Map Helper Controls -->
       <div class="map-overlay-controls">
-        <button class="map-ctl-btn" id="btnLocateMe" title="Locate My Position">🎯 Near Me</button>
-        <button class="map-ctl-btn" id="btnToggleTiles" title="Switch Map Tiles (Dark / Light / Satellite)">🌐 Tiles</button>
-        <button class="map-ctl-btn" id="btnToggleHubs" title="Show/Hide Student & IT Commute Radius">🎓 Commute Zones</button>
-        <button class="map-ctl-btn" id="btnDrawArea" title="Sector Rent Benchmark">📐 Sector Stats</button>
-        <button class="map-ctl-btn" id="btnHowToUse" title="How to Use chandigarh.rent">💡 <span class="hide-mobile">How to Use</span></button>
+        <button class="map-ctl-btn" id="btnLocateMe" title="Locate My Position"><i data-lucide="crosshair"></i> Near Me</button>
+        <button class="map-ctl-btn" id="btnToggleTiles" title="Switch Map Tiles (Dark / Light / Satellite)"><i data-lucide="layers"></i> Tiles</button>
+        <button class="map-ctl-btn" id="btnToggleHubs" title="Show/Hide Student & IT Commute Radius"><i data-lucide="graduation-cap"></i> Commute Zones</button>
+        <button class="map-ctl-btn" id="btnDrawArea" title="Sector Rent Benchmark"><i data-lucide="line-chart"></i> Sector Stats</button>
+        <button class="map-ctl-btn" id="btnHowToUse" title="How to Use chandigarh.rent"><i data-lucide="help-circle"></i> <span class="hide-mobile">How to Use</span></button>
       </div>
 
       <!-- Bottom Floating Mobile Bar -->
       <div class="mobile-action-bar">
         <button class="mobile-act-btn" id="mBtnFilters">
-          <span>🎛️</span> Filters
+          <i data-lucide="sliders-horizontal"></i> Filters
         </button>
         <button class="mobile-act-btn" id="mBtnDropRent">
-          <span>🟢</span> Drop Rent
+          <i data-lucide="circle-dollar-sign" class="icon-rent"></i> Drop Rent
         </button>
         <button class="mobile-act-btn" id="mBtnListFlat">
-          <span>🔵</span> List Flat
+          <i data-lucide="home" class="icon-owner"></i> List Flat
         </button>
         <button class="mobile-act-btn" id="mBtnSeeker">
-          <span>🟣</span> Seek Flat
+          <i data-lucide="user-check" class="icon-seeker"></i> Seek Flat
         </button>
         <button class="mobile-act-btn" id="mBtnToLet">
-          <span>🟡</span> Spot Board
+          <i data-lucide="camera" class="icon-tolet"></i> Spot Board
         </button>
       </div>
     </div>
@@ -1283,7 +1286,7 @@
   <div class="modal-backdrop" id="modalHowToUse">
     <div class="modal-card modal-lg">
       <div class="modal-header">
-        <h3 class="modal-title">💡 How to Use chandigarh.rent</h3>
+        <h3 class="modal-title"><i data-lucide="help-circle"></i> How to Use chandigarh.rent</h3>
         <button class="modal-close" data-close="modalHowToUse">&times;</button>
       </div>
       <div class="modal-body">
@@ -1296,22 +1299,22 @@
 
         <!-- Section 1: Map Pins Explained -->
         <div class="guide-section">
-          <h4 class="guide-section-title">📍 Understanding Map Pin Colors</h4>
+          <h4 class="guide-section-title"><i data-lucide="map-pin"></i> Understanding Map Pin Colors</h4>
           <div class="guide-pins-grid">
             <div class="guide-pin-card">
-              <div class="pin-badge pin-rent">🟢 Rent Paid</div>
+              <div class="pin-badge pin-rent"><i data-lucide="circle-dollar-sign"></i> Rent Paid</div>
               <p>Actual monthly rent paid by verified or anonymous tenants. Use this to benchmark fair market prices in any sector.</p>
             </div>
             <div class="guide-pin-card">
-              <div class="pin-badge pin-owner">🔵 Available Flat</div>
+              <div class="pin-badge pin-owner"><i data-lucide="home"></i> Available Flat</div>
               <p>Direct owner listing with zero brokerage fees. View BHK, rent, photos, contact info, and amenities.</p>
             </div>
             <div class="guide-pin-card">
-              <div class="pin-badge pin-seeker">🟣 Flatmate Seeker</div>
+              <div class="pin-badge pin-seeker"><i data-lucide="user-check"></i> Flatmate Seeker</div>
               <p>Roommates or tenants looking for a flat or replacement roommate. Match budget & preferences directly.</p>
             </div>
             <div class="guide-pin-card">
-              <div class="pin-badge pin-tolet">🟡 Spotted To-Let</div>
+              <div class="pin-badge pin-tolet"><i data-lucide="camera"></i> Spotted To-Let</div>
               <p>Crowdsourced photo & contact details of "To-Let" boards spotted physically on street houses and kothis.</p>
             </div>
           </div>
@@ -1319,7 +1322,7 @@
 
         <!-- Section 2: Step-by-Step Guide -->
         <div class="guide-section">
-          <h4 class="guide-section-title">🚀 Quick Start Steps</h4>
+          <h4 class="guide-section-title"><i data-lucide="rocket"></i> Quick Start Steps</h4>
           <div class="guide-steps-list">
             <div class="guide-step-item">
               <div class="step-num">1</div>
@@ -1339,7 +1342,7 @@
               <div class="step-num">3</div>
               <div class="step-content">
                 <strong>Add Your Own Pin (Drop Rent or List Flat)</strong>
-                <p>Click the <strong>➕ Add Pin</strong> button at the top header (or bottom mobile bar) to anonymously report what you pay, list your flat, post a roommate query, or upload a spotted To-Let board.</p>
+                <p>Click the <strong>Add Pin</strong> button at the top header (or bottom mobile bar) to anonymously report what you pay, list your flat, post a roommate query, or upload a spotted To-Let board.</p>
               </div>
             </div>
             <div class="guide-step-item">
@@ -1347,11 +1350,11 @@
               <div class="step-content">
                 <strong>Use Floating Map Helper Tools</strong>
                 <p>
-                  🎯 <strong>Near Me:</strong> Auto-center using your device GPS.<br>
-                  🌐 <strong>Tiles:</strong> Switch between Dark, Light, & Satellite maps.<br>
-                  🎓 <strong>Commute Zones:</strong> Show PU, Chandigarh University, IT Park Mohali commute radii.<br>
-                  📐 <strong>Sector Stats:</strong> View sector-by-sector rent averages and benchmarks.<br>
-                  ❓ <strong>How to Use:</strong> Open this quick feature guide anytime.
+                  <i data-lucide="crosshair"></i> <strong>Near Me:</strong> Auto-center using your device GPS.<br>
+                  <i data-lucide="layers"></i> <strong>Tiles:</strong> Switch between Dark, Light, & Satellite maps.<br>
+                  <i data-lucide="graduation-cap"></i> <strong>Commute Zones:</strong> Show PU, Chandigarh University, IT Park Mohali commute radii.<br>
+                  <i data-lucide="line-chart"></i> <strong>Sector Stats:</strong> View sector-by-sector rent averages and benchmarks.<br>
+                  <i data-lucide="help-circle"></i> <strong>How to Use:</strong> Open this quick feature guide anytime.
                 </p>
               </div>
             </div>
@@ -1360,7 +1363,7 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="btnGuideAddPin">➕ Add My Rent / Listing</button>
+        <button type="button" class="btn btn-secondary" id="btnGuideAddPin"><i data-lucide="plus"></i> Add My Rent / Listing</button>
         <button type="button" class="btn btn-primary" data-close="modalHowToUse">Got it, Let's Explore!</button>
       </div>
     </div>
