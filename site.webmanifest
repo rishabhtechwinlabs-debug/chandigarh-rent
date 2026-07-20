@@ -1,0 +1,17 @@
+{
+  "name": "chandigarh.rent — Real Rent Prices & No-Brokerage Flats",
+  "short_name": "chandigarh.rent",
+  "description": "Transparent crowdsourced rent map for Chandigarh, Mohali & Panchkula. Find zero-brokerage flats, match with flatmates, and view verified rentals.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="roofGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Border Ring -->
+  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="#38bdf8" stroke-width="6" stroke-opacity="0.3"/>
+
+  <!-- Map Pin Body -->
+  <g filter="url(#glow)">
+    <path d="M256 64C167.6 64 96 135.6 96 224c0 118.4 136 214.4 150.4 224 5.6 3.7 13.6 3.7 19.2 0C280 438.4 416 342.4 416 224 416 135.6 344.4 64 256 64z" fill="url(#pinGrad)"/>
+  </g>
+
+  <!-- Inner House Silhouette inside Pin -->
+  <!-- Roof -->
+  <path d="M256 148 L170 216 H195 V278 H317 V216 H342 Z" fill="url(#roofGrad)"/>
+  
+  <!-- Door / Window detail -->
+  <rect x="232" y="232" width="48" height="46" rx="6" fill="#0f172a"/>
+  
+  <!-- Location Pulse Dot at Bottom -->
+  <circle cx="256" cy="448" r="16" fill="#38bdf8" opacity="0.6"/>
+</svg>
