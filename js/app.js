@@ -364,7 +364,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (m) m.classList.remove('show');
   }
 
-  // Handle Location Picker Component Actions (Use GPS & Pick on map)
+  // State for interactive map picker overlay
+  let activeModalForPicker = null;
+  let activeTargetSpanForPicker = null;
+  const mapPickerBanner = document.getElementById('mapPickerBanner');
+  const mapPickerCoordsText = document.getElementById('mapPickerCoordsText');
+
+  // 1. Handle "Use GPS" Button
   document.querySelectorAll('.btn-use-gps').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -380,7 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
           mapManager.flyToLocation(lat, lng, 16);
           btn.textContent = 'Use GPS';
         }, () => {
-          alert('GPS permission unavailable. Using current map center.');
           const center = mapManager.getCenter();
           selectedHoldCoords = center;
           if (targetSpan) targetSpan.textContent = `· ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
@@ -390,16 +395,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // 2. Handle "Pick on map" Button (Opens smooth map overlay banner, no alert popups!)
   document.querySelectorAll('.btn-pick-map').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      const targetSpanId = e.target.dataset.coordsId;
-      const targetSpan = document.getElementById(targetSpanId);
+      const modalCard = e.target.closest('.modal-backdrop');
+      if (modalCard) {
+        activeModalForPicker = modalCard.id;
+        closeModal(activeModalForPicker);
+      }
+      activeTargetSpanForPicker = document.getElementById(e.target.dataset.coordsId);
+
       const center = mapManager.getCenter();
-      selectedHoldCoords = center;
-      if (targetSpan) targetSpan.textContent = `· ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
-      alert('📍 Location set to current map center! Pan or zoom map anytime to adjust.');
+      mapPickerCoordsText.textContent = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+      mapPickerBanner.classList.add('show');
     });
+  });
+
+  // Update banner coordinates text live as map pans
+  mapManager.map.on('move', () => {
+    if (mapPickerBanner && mapPickerBanner.classList.contains('show')) {
+      const center = mapManager.getCenter();
+      mapPickerCoordsText.textContent = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+    }
+  });
+
+  // Confirm Location on Map Banner
+  document.getElementById('btnConfirmMapPicker')?.addEventListener('click', () => {
+    const center = mapManager.getCenter();
+    selectedHoldCoords = center;
+    if (activeTargetSpanForPicker) {
+      activeTargetSpanForPicker.textContent = `· ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+    }
+    mapPickerBanner.classList.remove('show');
+    if (activeModalForPicker) {
+      openModal(activeModalForPicker);
+    }
+  });
+
+  // Cancel Map Picker
+  document.getElementById('btnCancelMapPicker')?.addEventListener('click', () => {
+    mapPickerBanner.classList.remove('show');
+    if (activeModalForPicker) {
+      openModal(activeModalForPicker);
+    }
   });
 
   // ==================== STRICT DATA VALIDATOR & SPAM PROTECTION ====================
