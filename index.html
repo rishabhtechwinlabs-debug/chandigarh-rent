@@ -784,16 +784,20 @@
   <div class="modal-backdrop" id="modalDropSeeker">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 class="modal-title">🟣 Drop Flat Seeker Pin</h3>
+        <h3 class="modal-title">🟣 Drop a Seeker Pin</h3>
         <button class="modal-close" data-close="modalDropSeeker">&times;</button>
       </div>
       <form id="formDropSeeker">
         <div class="modal-body">
-          <p class="modal-subtitle">Looking for a home in Chandigarh or Mohali? Drop your requirements so owners can contact you directly.</p>
+          <!-- Testimonial Banner -->
+          <div class="testimonial-banner">
+            <span class="testimonial-quote">“I’ve shared your website to one of my friends. He successfully found a flat.”</span>
+            <span class="testimonial-author">— Dhinesh · sent a friend here</span>
+          </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Target City / Area</label>
+              <label>Target City / Area <span class="required-star">*</span></label>
               <select id="seekerCity" required>
                 <option value="Chandigarh">Chandigarh (Near PU / Sectors)</option>
                 <option value="Mohali">Mohali (Phases / IT Park / Sectors)</option>
@@ -801,7 +805,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Preferred Sector / Phase</label>
+              <label>Preferred Sector / Phase <span class="required-star">*</span></label>
               <select id="seekerSector" required>
                 <option value="">-- Choose Sector / Phase --</option>
                 <optgroup label="📍 Chandigarh Sectors">
@@ -884,54 +888,116 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label>I'm looking for <span class="required-star">*</span></label>
+            <select id="seekerLookingFor" required>
+              <option value="Room in Shared Flat">Room in Shared Flat (Flatmate)</option>
+              <option value="Full Flat">Full Flat / House</option>
+              <option value="Single Room">Single Room / 1 RK</option>
+              <option value="PG">PG / Hostel</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Budget per room (₹/month) <span class="required-star">*</span></label>
+            <input type="number" id="seekerBudget" placeholder="e.g. 15000" min="2000" max="200000" required>
+            <small class="help-text">Median rent in 2km radius: 1BHK ₹10K (25 pins) · 2BHK ₹20K (16 pins) · 3BHK ₹35K (15 pins)</small>
+          </div>
+
           <div class="form-row">
             <div class="form-group">
-              <label>Required BHK</label>
+              <label>BHK Preference</label>
               <select id="seekerBhk" required>
                 <option value="1BHK">1 BHK</option>
                 <option value="2BHK">2 BHK</option>
                 <option value="3BHK">3 BHK</option>
                 <option value="1RK">1 RK / Studio</option>
-                <option value="PG">Room in Shared Flat / PG</option>
+                <option value="Any">Any BHK / Flexible</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Max Budget (₹/mo)</label>
-              <input type="number" id="seekerBudget" placeholder="e.g. 15000" required>
+              <label>Move-in Timeline</label>
+              <select id="seekerTimeline">
+                <option value="Immediately">Immediately (Within 7 days)</option>
+                <option value="Within 15 Days">Within 15 Days</option>
+                <option value="Next Month">Next Month</option>
+                <option value="Flexible">Flexible</option>
+              </select>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Expected Move-in Date</label>
-              <input type="date" id="seekerMoveDate" required>
+              <label>Food preference in flatmate</label>
+              <select id="seekerFoodPref">
+                <option value="No Preference">No Preference</option>
+                <option value="Vegetarian Only">Vegetarian Only</option>
+                <option value="Eggetarian">Eggetarian</option>
+                <option value="Non-Vegetarian">Non-Vegetarian</option>
+              </select>
             </div>
             <div class="form-group">
-              <label>Occupant Profile</label>
+              <label>Okay with a flatmate who smokes?</label>
+              <select id="seekerSmoking">
+                <option value="Outside only / Doesn't matter">🤷 Outside only / Doesn't matter</option>
+                <option value="No">🚭 No (Non-smoker only)</option>
+                <option value="Yes">🚬 Yes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>You are <span class="help-text">(optional but helps matching)</span></label>
               <select id="seekerProfile">
-                <option value="Student">Student (PU / PEC / Chitkara / CU)</option>
-                <option value="IT Professional">IT Professional (Mohali IT Park)</option>
-                <option value="Family">Family</option>
                 <option value="Working Professional">Working Professional</option>
+                <option value="Student">Student (PU / PEC / CU)</option>
+                <option value="IT Professional">IT Professional (Mohali IT Park)</option>
+                <option value="Freelancer">Freelancer / Remote</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>What gender flatmate are you comfortable with?</label>
+              <select id="seekerGenderPref">
+                <option value="Any Gender / Mixed">Any Gender / Mixed</option>
+                <option value="Male Only">Male Only</option>
+                <option value="Female Only">Female Only</option>
               </select>
             </div>
           </div>
 
+          <div class="form-group">
+            <label>🚗 Parking required?</label>
+            <div class="input-suffix-wrapper">
+              <input type="number" id="seekerParking" placeholder="e.g. 1" min="0" value="1">
+              <span class="input-suffix">cars</span>
+            </div>
+            <small class="help-text">Enter 0 if no parking needed.</small>
+          </div>
+
+          <div class="form-group">
+            <label>Tell us about your lifestyle <span class="help-text">(optional — helps us match you better)</span></label>
+            <textarea id="seekerLifestyle" rows="3" placeholder="e.g. I'm a night owl, work from home 3 days a week, love cooking on weekends, quiet during weekdays, can't live without my cat"></textarea>
+            <small class="help-text">Sleep pattern, cooking habits, work-from-home, pets, noise tolerance — anything that helps a potential flatmate know if you'd click.</small>
+          </div>
+
           <div class="form-row">
             <div class="form-group">
-              <label>Your Name</label>
-              <input type="text" id="seekerName" placeholder="e.g. Aman Sharma" required>
+              <label>Your email <span class="required-star">*</span></label>
+              <input type="email" id="seekerEmail" placeholder="you@gmail.com" required>
             </div>
             <div class="form-group">
-              <label>Contact Phone / Email</label>
-              <input type="text" id="seekerContact" placeholder="e.g. 9812345678 or aman@email.com" required>
+              <label>Phone number <span class="required-star">*</span></label>
+              <input type="tel" id="seekerPhone" placeholder="10-digit mobile" required>
+              <small class="help-text">Private — only shared when we find a match for you.</small>
             </div>
           </div>
 
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-tertiary" data-close="modalDropSeeker">Cancel</button>
-          <button type="submit" class="btn btn-primary">Post Seeker Requirement</button>
+          <button type="submit" class="btn btn-primary">Drop Seeker Pin</button>
         </div>
       </form>
     </div>

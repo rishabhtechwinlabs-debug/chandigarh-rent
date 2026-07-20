@@ -642,8 +642,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const sector = getEffectiveSector('seekerSector', 'seekerSectorCustom');
     const bhk = document.getElementById('seekerBhk').value;
     const budget = document.getElementById('seekerBudget').value;
-    const name = document.getElementById('seekerName').value;
-    const contact = document.getElementById('seekerContact').value;
+    const email = document.getElementById('seekerEmail').value.trim();
+    const phone = document.getElementById('seekerPhone').value.trim();
 
     if (!TricityValidator.isValidSector(sector)) {
       alert('⚠️ Please select an official Sector/Phase or enter a genuine custom sub-location.');
@@ -651,17 +651,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!TricityValidator.isValidRent(budget, bhk)) {
-      alert(`⚠️ Please enter a realistic max budget for ${bhk}.`);
+      alert(`⚠️ Please enter a realistic max budget per room for ${bhk}.`);
       return;
     }
 
-    if (!TricityValidator.isValidName(name)) {
-      alert('⚠️ Please enter your valid full name.');
-      return;
-    }
-
-    if (!TricityValidator.isValidContact(contact)) {
-      alert('⚠️ Please enter a valid 10-digit phone number or email address.');
+    if (!TricityValidator.isValidPhone(phone)) {
+      alert('⚠️ Please enter a valid 10-digit mobile number.');
       return;
     }
 
@@ -671,25 +666,34 @@ document.addEventListener('DOMContentLoaded', () => {
       type: 'seeker',
       city: document.getElementById('seekerCity').value,
       sector: sector.trim(),
-      bhk: bhk,
+      lookingFor: document.getElementById('seekerLookingFor')?.value || 'Room in Shared Flat',
       budget: Number(budget),
-      moveDate: document.getElementById('seekerMoveDate').value,
-      profile: document.getElementById('seekerProfile').value,
-      seekerName: name.trim(),
-      contact: contact.trim(),
+      bhk: bhk,
+      timeline: document.getElementById('seekerTimeline')?.value || 'Flexible',
+      foodPref: document.getElementById('seekerFoodPref')?.value || 'No Preference',
+      smoking: document.getElementById('seekerSmoking')?.value || 'Outside only',
+      profile: document.getElementById('seekerProfile')?.value || 'Working Professional',
+      genderPref: document.getElementById('seekerGenderPref')?.value || 'Any Gender / Mixed',
+      parking: Number(document.getElementById('seekerParking')?.value) || 0,
+      lifestyle: document.getElementById('seekerLifestyle')?.value.trim() || '',
+      email: email,
+      phone: phone,
+      seekerName: email.split('@')[0] || 'Flat Seeker',
+      contact: phone,
       lat: targetCoords.lat,
       lng: targetCoords.lng
     };
 
-    const pin = await window.rentDataManager.addPin(newPin);
+    await window.rentDataManager.addPin(newPin);
     selectedHoldCoords = null;
     closeModal('modalDropSeeker');
     document.getElementById('formDropSeeker').reset();
     document.getElementById('seekerSectorCustom').style.display = 'none';
     applyFiltersAndRender();
+    alert('🎉 Flat Seeker pin dropped successfully on map!');
 
     // Check for matches!
-    const matches = window.tricityMatcher.findMatchesForSeeker(pin);
+    const matches = window.tricityMatcher.findMatchesForSeeker(newPin);
     if (matches.length > 0) {
       alert(`🎉 Seeker pin dropped! We found ${matches.length} matching available flat(s) in your area!`);
     } else {

@@ -244,6 +244,31 @@
   color: #ef4444;
 }
 
+/* Testimonial Banner inside Modals */
+.testimonial-banner {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.testimonial-quote {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.testimonial-author {
+  font-size: 0.74rem;
+  color: #a78bfa;
+  font-weight: 600;
+}
+
 /* Suffix Input Wrapper (e.g. "cars", "sq.ft") */
 .input-suffix-wrapper {
   position: relative;
