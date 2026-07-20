@@ -198,21 +198,21 @@ class TricityMapManager {
 
     if (pin.type === 'rent') {
       typeBadge = '<span class="popup-badge popup-badge-rent"><i data-lucide="circle-dollar-sign"></i> Rent Paid</span>';
-      priceText = '₹' + pin.rent.toLocaleString('en-IN') + '/mo';
+      priceText = '₹' + (pin.rent || 0).toLocaleString('en-IN') + '/mo';
       bodyDetails = `
         <div class="popup-detail-row">
-          <span><i data-lucide="home"></i> ${pin.bhk}</span>
+          <span><i data-lucide="home"></i> ${pin.bhk || 'N/A'}</span>
           <span><i data-lucide="${pin.gated === 'Yes' ? 'shield-check' : 'shield'}"></i> ${pin.gated === 'Yes' ? 'Gated' : 'Open Sector'}</span>
-          <span><i data-lucide="sparkles"></i> ${pin.furnished}</span>
+          <span><i data-lucide="sparkles"></i> ${pin.furnished || 'N/A'}</span>
         </div>
         <div class="popup-detail-row">
-          <span><i data-lucide="star" class="icon-star"></i> Landlord Rating: ${pin.rating}/5</span>
+          <span><i data-lucide="star" class="icon-star"></i> Landlord Rating: ${pin.rating || 'N/A'}/5</span>
         </div>
         ${pin.review ? `<div class="popup-review-quote">"${pin.review}"</div>` : ''}
       `;
     } else if (pin.type === 'owner') {
       typeBadge = '<span class="popup-badge popup-badge-owner"><i data-lucide="home"></i> Zero Broker Flat</span>';
-      priceText = '₹' + pin.rent.toLocaleString('en-IN') + '/mo';
+      priceText = '₹' + (pin.rent || 0).toLocaleString('en-IN') + '/mo';
       const cleanPhone = (pin.phone || '').replace(/\D/g, '');
       const waMsg = encodeURIComponent(`Hi ${pin.contactName || ''}! I saw your ${pin.bhk} listing for ${pin.sector} on chandigarh.rent and I'm interested.`);
       bodyDetails = `
@@ -230,26 +230,34 @@ class TricityMapManager {
       `;
     } else if (pin.type === 'seeker') {
       typeBadge = '<span class="popup-badge popup-badge-seeker"><i data-lucide="user-check"></i> Seeker Requirement</span>';
-      priceText = 'Budget: ₹' + pin.budget.toLocaleString('en-IN') + '/mo';
+      priceText = 'Budget: ₹' + (pin.budget || 0).toLocaleString('en-IN') + '/mo';
       bodyDetails = `
         <div class="popup-detail-row">
-          <span><i data-lucide="home"></i> Needs ${pin.bhk}</span>
+          <span><i data-lucide="home"></i> Needs ${pin.bhk || 'Any'}</span>
           <span><i data-lucide="calendar"></i> Move Date: ${pin.moveDate || 'Immediate'}</span>
         </div>
         <div class="popup-detail-row">
-          <span><i data-lucide="user"></i> Profile: ${pin.profile}</span>
+          <span><i data-lucide="user"></i> Profile: ${pin.profile || 'Not specified'}</span>
         </div>
-        <a href="mailto:${pin.contact}" class="btn btn-secondary btn-sm popup-action-btn"><i data-lucide="mail"></i> Contact ${pin.seekerName}</a>
+        ${pin.contact ? `<a href="mailto:${pin.contact}" class="btn btn-secondary btn-sm popup-action-btn"><i data-lucide="mail"></i> Contact ${pin.contactName || pin.seekerName || 'Seeker'}</a>` : ''}
       `;
     } else if (pin.type === 'tolet') {
       typeBadge = '<span class="popup-badge popup-badge-tolet"><i data-lucide="camera"></i> Spotted To-Let</span>';
       priceText = 'Spotted Board';
+      // notes may contain JSON - extract cleanly
+      let toletNotes = '';
+      try {
+        const parsed = JSON.parse(pin.notes || '{}');
+        toletNotes = parsed.toletNotes || '';
+      } catch(e) {
+        toletNotes = (typeof pin.notes === 'string' && !pin.notes.startsWith('{')) ? pin.notes : '';
+      }
       bodyDetails = `
         <div class="popup-detail-row">
-          <span><i data-lucide="map-pin"></i> Location: ${pin.sector}</span>
+          <span><i data-lucide="map-pin"></i> Location: ${pin.sector || 'N/A'}</span>
         </div>
-        <p style="font-size: 0.78rem; color: var(--text-main); margin-top: 4px;">${pin.notes || ''}</p>
-        <a href="tel:${pin.phone}" class="btn btn-primary btn-sm popup-action-btn"><i data-lucide="phone"></i> Call Number on Board (${pin.phone})</a>
+        ${toletNotes ? `<p style="font-size: 0.78rem; color: var(--text-main); margin-top: 4px;">${toletNotes}</p>` : ''}
+        ${pin.phone ? `<a href="tel:${pin.phone}" class="btn btn-primary btn-sm popup-action-btn"><i data-lucide="phone"></i> Call Number on Board (${pin.phone})</a>` : ''}
       `;
     }
 
@@ -456,12 +464,12 @@ class TricityMapManager {
 
     const popupHtml = `
       <div class="map-context-menu">
-        <h4>📍 Selected Location</h4>
-        <small>Lat: ${latlng.lat.toFixed(4)}, Lng: ${latlng.lng.toFixed(4)}</small>
-        <button class="ctx-btn" data-action="rent">🟢 Drop Anonymous Rent</button>
-        <button class="ctx-btn" data-action="owner">🔵 List Flat (Zero Brokerage)</button>
-        <button class="ctx-btn" data-action="seeker">🟣 Drop Seeker Pin</button>
-        <button class="ctx-btn" data-action="tolet">🟡 Spot "To-Let" Board</button>
+        <h4><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Pin Here</h4>
+        <small style="color:var(--text-muted)">Lat: ${latlng.lat.toFixed(4)}, Lng: ${latlng.lng.toFixed(4)}</small>
+        <button class="ctx-btn ctx-rent"  data-action="rent"><span class="ctx-dot"></span> Drop Anonymous Rent</button>
+        <button class="ctx-btn ctx-owner" data-action="owner"><span class="ctx-dot"></span> List Flat (Zero Brokerage)</button>
+        <button class="ctx-btn ctx-seeker" data-action="seeker"><span class="ctx-dot"></span> Drop Seeker Pin</button>
+        <button class="ctx-btn ctx-tolet"  data-action="tolet"><span class="ctx-dot"></span> Spot "To-Let" Board</button>
       </div>
     `;
 

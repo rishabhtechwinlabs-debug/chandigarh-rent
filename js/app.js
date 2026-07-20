@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
   updateThemeIcon();
   mapManager.setTileStyle(state.theme);
 
-  // Initial Filter Apply & Render
-  applyFiltersAndRender();
+  // Initial Filter Apply & Render (wrapped to prevent crash from killing listeners)
+  try { applyFiltersAndRender(); } catch(err) { console.error('[Init] applyFiltersAndRender failed:', err); }
 
   // Primary Database Fetch: Sync live pins from Supabase Cloud DB
   window.rentDataManager.syncFromCloud().then(() => {
-    applyFiltersAndRender();
+    try { applyFiltersAndRender(); } catch(err) { console.error('[Sync] applyFiltersAndRender failed:', err); }
   });
 
   // ==================== EVENT LISTENERS ====================
@@ -367,8 +367,11 @@ document.addEventListener('DOMContentLoaded', () => {
     addPinDropdown.classList.toggle('show');
   });
 
-  document.addEventListener('click', () => {
-    addPinDropdown.classList.remove('show');
+  // Close dropdown only when clicking OUTSIDE of the dropdown container
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown-container')) {
+      addPinDropdown.classList.remove('show');
+    }
   });
 
   // ==================== MODAL HANDLERS ====================
@@ -376,21 +379,29 @@ document.addEventListener('DOMContentLoaded', () => {
   // Open Modals via Dropdown Actions
   document.getElementById('actionDropRent').addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    addPinDropdown.classList.remove('show');
     openModal('modalDropRent');
   });
 
   document.getElementById('actionListFlat').addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    addPinDropdown.classList.remove('show');
     openModal('modalListFlat');
   });
 
   document.getElementById('actionDropSeeker').addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    addPinDropdown.classList.remove('show');
     openModal('modalDropSeeker');
   });
 
   document.getElementById('actionSpotToLet').addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    addPinDropdown.classList.remove('show');
     openModal('modalSpotToLet');
   });
 
@@ -678,16 +689,67 @@ document.addEventListener('DOMContentLoaded', () => {
     return selVal || '';
   };
 
-  // Helper: File to Base64 Data URL
-  const fileToDataURL = (file) => {
+
+  // Helper: Compress image to max 800px and 200KB before upload
+  const compressImage = (file, maxWidth = 800, quality = 0.75) => {
     return new Promise((resolve) => {
       if (!file) return resolve(null);
       const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(null);
+        img.src = e.target.result;
+      };
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(file);
     });
   };
+
+  // Helper: Upload photo to Supabase Storage, fallback to compressed base64
+  const uploadPhotoToStorage = async (file) => {
+    if (!file) return null;
+
+    const { url, anonKey } = window.SUPABASE_CONFIG || {};
+    if (url && anonKey) {
+      try {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const fileName = `pin-${Date.now()}-${Math.random().toString(36).substr(2, 6)}.${ext}`;
+        const storageRes = await fetch(
+          `${url}/storage/v1/object/pin-photos/${fileName}`,
+          {
+            method: 'POST',
+            headers: {
+              'apikey': anonKey,
+              'Authorization': `Bearer ${anonKey}`,
+              'Content-Type': file.type || 'image/jpeg',
+              'x-upsert': 'false'
+            },
+            body: file
+          }
+        );
+        if (storageRes.ok) {
+          // Return the public URL
+          return `${url}/storage/v1/object/public/pin-photos/${fileName}`;
+        }
+      } catch (e) {
+        console.warn('Supabase Storage upload failed, falling back to compressed base64:', e);
+      }
+    }
+
+    // Fallback: compressed base64 stored in notes JSON
+    return await compressImage(file);
+  };
+
+  // Keep legacy alias
+  const fileToDataURL = uploadPhotoToStorage;
 
   // Pill Radio Button Group Interactivity
   document.querySelectorAll('.pill-group').forEach(group => {
@@ -926,28 +988,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==================== CORE RENDER CONTROLLER ====================
 
   function applyFiltersAndRender() {
-    const filteredPins = window.rentDataManager.filterPins(state);
+    try {
+      const filteredPins = window.rentDataManager.filterPins(state);
 
-    // 1. Render Map Markers
-    mapManager.renderPins(filteredPins);
+      // 1. Render Map Markers
+      mapManager.renderPins(filteredPins);
 
-    // 2. Compute Overview Metrics
-    const overview = window.tricityStatsEngine.computeOverviewStats(filteredPins);
+      // 2. Compute Overview Metrics (guard: stats engine may not be ready)
+      if (window.tricityStatsEngine) {
+        const overview = window.tricityStatsEngine.computeOverviewStats(filteredPins);
+        const statTotal = document.getElementById('statTotalPins');
+        const statRent  = document.getElementById('statAvgRent');
+        const statDirect = document.getElementById('statDirectFlats');
+        if (statTotal)  statTotal.textContent  = overview.totalPins;
+        if (statRent)   statRent.textContent   = overview.avg2BHK !== 'N/A' ? overview.avg2BHK : overview.avg1BHK;
+        if (statDirect) statDirect.textContent = filteredPins.filter(p => p.type === 'owner').length;
+      }
 
-    document.getElementById('statTotalPins').textContent = overview.totalPins;
-    document.getElementById('statAvgRent').textContent = overview.avg2BHK !== 'N/A' ? overview.avg2BHK : overview.avg1BHK;
-    
-    const directCnt = filteredPins.filter(p => p.type === 'owner').length;
-    document.getElementById('statDirectFlats').textContent = directCnt;
+      // Layer Count Badges in Sidebar
+      const allPins = window.rentDataManager.getAllPins();
+      const elCntRent   = document.getElementById('cntRent');
+      const elCntOwner  = document.getElementById('cntOwner');
+      const elCntSeeker = document.getElementById('cntSeeker');
+      const elCntTolet  = document.getElementById('cntTolet');
+      if (elCntRent)   elCntRent.textContent   = allPins.filter(p => p.type === 'rent').length;
+      if (elCntOwner)  elCntOwner.textContent  = allPins.filter(p => p.type === 'owner').length;
+      if (elCntSeeker) elCntSeeker.textContent = allPins.filter(p => p.type === 'seeker').length;
+      if (elCntTolet)  elCntTolet.textContent  = allPins.filter(p => p.type === 'tolet').length;
 
-    // Layer Count Badges in Sidebar
-    const allPins = window.rentDataManager.getAllPins();
-    document.getElementById('cntRent').textContent = allPins.filter(p => p.type === 'rent').length;
-    document.getElementById('cntOwner').textContent = allPins.filter(p => p.type === 'owner').length;
-    document.getElementById('cntSeeker').textContent = allPins.filter(p => p.type === 'seeker').length;
-    document.getElementById('cntTolet').textContent = allPins.filter(p => p.type === 'tolet').length;
-
-    if (window.lucide) lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
+    } catch (err) {
+      console.error('[applyFiltersAndRender] Error:', err);
+    }
   }
 
   function populateSectorStatsTable() {

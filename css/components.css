@@ -912,6 +912,20 @@
   transform: translateX(3px);
 }
 
+/* Colored dot indicators for context menu actions */
+.ctx-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--primary);
+}
+.ctx-rent .ctx-dot   { background: #10b981; }
+.ctx-owner .ctx-dot  { background: #3b82f6; }
+.ctx-seeker .ctx-dot { background: #8b5cf6; }
+.ctx-tolet .ctx-dot  { background: #f59e0b; }
+
 /* ==========================================================================
    HOW TO USE / GUIDE MODAL STYLES
    ========================================================================== */
