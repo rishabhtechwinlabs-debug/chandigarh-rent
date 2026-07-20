@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chandigarh.rent — Real Rent Prices & No-Brokerage Flats in Chandigarh & Mohali</title>
+  <meta name="description" content="Transparent, crowdsourced rent map for Chandigarh, Mohali & Panchkula. See what actual tenants pay, find zero-brokerage flats, match with flatmates, and spot To-Let boards. 100% free, no login needed.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <a href="#" class="brand-logo">
+        <span class="logo-icon">📍</span>
+        <span class="logo-text">chandigarh<span class="logo-accent">.rent</span></span>
+        <span class="tricity-badge">TRICITY</span>
+      </a>
+
+      <!-- Quick Area / City Selector -->
+      <div class="city-selector-group">
+        <button class="city-btn active" data-city="all">All Tricity</button>
+        <button class="city-btn" data-city="chandigarh">Chandigarh</button>
+        <button class="city-btn" data-city="mohali">Mohali</button>
+        <button class="city-btn" data-city="panchkula">Panchkula</button>
+      </div>
+    </div>
+
+    <!-- Quick Search Bar -->
+    <div class="header-center">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="sectorSearchInput" placeholder="Search Sector 15, Sector 35, Phase 7, Kharar..." autocomplete="off">
+        <div id="searchSuggestions" class="search-suggestions"></div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="header-right">
+      <button class="btn btn-secondary btn-sm" id="btnOpenMobileFilters" title="Toggle Filters">
+        <span class="btn-icon">🎛️</span> <span class="desktop-only-text">Filters</span>
+      </button>
+
+      <button class="btn btn-secondary btn-sm" id="btnAreaStats">
+        <span class="btn-icon">📊</span> Area Rent Stats
+      </button>
+
+      <div class="dropdown-container">
+        <button class="btn btn-primary btn-sm" id="btnMainAction">
+          <span class="btn-icon">➕</span> <span class="main-btn-label">Add Pin</span>
+        </button>
+        <div class="dropdown-menu" id="addPinDropdown">
+          <a href="#" class="dropdown-item" id="actionDropRent">
+            <span class="item-icon">🟢</span>
+            <div>
+              <strong>Drop Anonymous Rent</strong>
+              <small>Share what you pay to help other renters</small>
+            </div>
+          </a>
+          <a href="#" class="dropdown-item" id="actionListFlat">
+            <span class="item-icon">🔵</span>
+            <div>
+              <strong>List Flat / Flatmate</strong>
+              <small>Post direct owner listing (Zero Brokerage)</small>
+            </div>
+          </a>
+          <a href="#" class="dropdown-item" id="actionDropSeeker">
+            <span class="item-icon">🟣</span>
+            <div>
+              <strong>Drop Seeker Pin</strong>
+              <small>Find a flat or flatmate in your budget</small>
+            </div>
+          </a>
+          <a href="#" class="dropdown-item" id="actionSpotToLet">
+            <span class="item-icon">🟡</span>
+            <div>
+              <strong>Spot a "To-Let" Board</strong>
+              <small>Upload photo of board seen in street</small>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <button class="theme-toggle-btn" id="btnThemeToggle" title="Toggle Light/Dark Theme">
+        <span class="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Viewport Layout -->
+  <main class="app-viewport">
+    
+    <!-- Left Floating Controls & Filter Drawer -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Filters & Insights</h2>
+        <button class="sidebar-toggle-btn" id="btnToggleSidebar" title="Toggle Sidebar">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Quick Metrics Stats Banner -->
+      <div class="metrics-banner">
+        <div class="metric-card">
+          <span class="metric-val" id="statTotalPins">0</span>
+          <span class="metric-lbl">Total Pins</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-val" id="statAvgRent">₹14,500</span>
+          <span class="metric-lbl">Avg Rent</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-val" id="statDirectFlats">0</span>
+          <span class="metric-lbl">No-Broker Flats</span>
+        </div>
+      </div>
+
+      <!-- Map View Layer Filters -->
+      <div class="filter-section">
+        <label class="section-label">Map Layer Types</label>
+        <div class="pin-type-toggles">
+          <label class="toggle-pill active" data-type="rent">
+            <input type="checkbox" checked data-filter-type="rent">
+            <span class="dot dot-rent"></span> Rent Paid (<span id="cntRent">0</span>)
+          </label>
+          <label class="toggle-pill active" data-type="owner">
+            <input type="checkbox" checked data-filter-type="owner">
+            <span class="dot dot-owner"></span> Available Flats (<span id="cntOwner">0</span>)
+          </label>
+          <label class="toggle-pill active" data-type="seeker">
+            <input type="checkbox" checked data-filter-type="seeker">
+            <span class="dot dot-seeker"></span> Flat Seekers (<span id="cntSeeker">0</span>)
+          </label>
+          <label class="toggle-pill active" data-type="tolet">
+            <input type="checkbox" checked data-filter-type="tolet">
+            <span class="dot dot-tolet"></span> Spotted To-Let (<span id="cntTolet">0</span>)
+          </label>
+        </div>
+      </div>
+
+      <!-- BHK Filter -->
+      <div class="filter-section">
+        <label class="section-label">BHK / Room Type</label>
+        <div class="bhk-pills" id="bhkFilterContainer">
+          <button class="chip active" data-bhk="all">All</button>
+          <button class="chip" data-bhk="1RK">1 RK</button>
+          <button class="chip" data-bhk="1BHK">1 BHK</button>
+          <button class="chip" data-bhk="2BHK">2 BHK</button>
+          <button class="chip" data-bhk="3BHK">3 BHK</button>
+          <button class="chip" data-bhk="PG">PG / Room</button>
+        </div>
+      </div>
+
+      <!-- Monthly Rent Range Slider -->
+      <div class="filter-section">
+        <div class="section-header-row">
+          <label class="section-label">Max Monthly Rent</label>
+          <span class="slider-value" id="rentValueDisplay">₹80,000/mo</span>
+        </div>
+        <input type="range" id="rentRangeInput" min="5000" max="80000" step="2500" value="80000">
+      </div>
+
+      <!-- Quick Location Shortcuts -->
+      <div class="filter-section">
+        <label class="section-label">🔥 Hot Hubs & Sectors</label>
+        <div class="sector-chips">
+          <button class="sector-chip" data-lat="30.7578" data-lng="76.7684" data-zoom="15">Sector 15 (PU Student Hub)</button>
+          <button class="sector-chip" data-lat="30.7247" data-lng="76.7711" data-zoom="15">Sector 35 (Market Hub)</button>
+          <button class="sector-chip" data-lat="30.7317" data-lng="76.7656" data-zoom="15">Sector 34 (Coaching Hub)</button>
+          <button class="sector-chip" data-lat="30.7042" data-lng="76.7214" data-zoom="15">Mohali Phase 3B2</button>
+          <button class="sector-chip" data-lat="30.7028" data-lng="76.7028" data-zoom="15">Mohali Phase 7</button>
+          <button class="sector-chip" data-lat="30.6865" data-lng="76.7118" data-zoom="15">Sector 70 Mohali</button>
+          <button class="sector-chip" data-lat="30.7481" data-lng="76.6575" data-zoom="14">Kharar (Sector 125)</button>
+        </div>
+      </div>
+
+      <!-- Preferences & Attributes -->
+      <div class="filter-section">
+        <label class="section-label">Preferences & Features</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkGatedOnly">
+            <span>Gated Society / Security</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkStudentFriendly">
+            <span>Bachelor / Student Friendly</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkFurnishedOnly">
+            <span>Fully Furnished Only</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Reset Filters -->
+      <button class="btn btn-tertiary btn-block" id="btnResetFilters">Reset All Filters</button>
+
+      <!-- Footer Info -->
+      <div class="sidebar-footer">
+        <p>⚡ 100% Free & Transparent rental dataset for Chandigarh & Mohali.</p>
+        <p>No login needed · Zero Brokerage</p>
+      </div>
+    </aside>
+
+    <!-- Sidebar Mobile Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Main Map Canvas -->
+    <div class="map-container">
+      <div id="map"></div>
+
+      <!-- Floating Map Helper Controls -->
+      <div class="map-overlay-controls">
+        <button class="map-ctl-btn" id="btnLocateMe" title="Locate My Position">🎯 Near Me</button>
+        <button class="map-ctl-btn" id="btnToggleTiles" title="Switch Map Tiles (Dark / Light / Satellite)">🌐 Tiles</button>
+        <button class="map-ctl-btn" id="btnToggleHubs" title="Show/Hide Student & IT Commute Radius">🎓 Commute Zones</button>
+        <button class="map-ctl-btn" id="btnDrawArea" title="Sector Rent Benchmark">📐 Sector Stats</button>
+      </div>
+
+      <!-- Bottom Floating Mobile Bar -->
+      <div class="mobile-action-bar">
+        <button class="mobile-act-btn" id="mBtnFilters">
+          <span>🎛️</span> Filters
+        </button>
+        <button class="mobile-act-btn" id="mBtnDropRent">
+          <span>🟢</span> Drop Rent
+        </button>
+        <button class="mobile-act-btn" id="mBtnListFlat">
+          <span>🔵</span> List Flat
+        </button>
+        <button class="mobile-act-btn" id="mBtnSeeker">
+          <span>🟣</span> Seek Flat
+        </button>
+        <button class="mobile-act-btn" id="mBtnToLet">
+          <span>🟡</span> Spot Board
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. DROP RENT PIN MODAL -->
+  <div class="modal-backdrop" id="modalDropRent">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🟢 Drop Anonymous Rent Pin</h3>
+        <button class="modal-close" data-close="modalDropRent">&times;</button>
+      </div>
+      <form id="formDropRent">
+        <div class="modal-body">
+          <p class="modal-subtitle">Help renters know what people actually pay in Chandigarh & Mohali. Completely anonymous.</p>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>City / Area</label>
+              <select id="rentCity" required>
+                <option value="Chandigarh">Chandigarh</option>
+                <option value="Mohali">Mohali</option>
+                <option value="Panchkula">Panchkula</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sector / Phase</label>
+              <select id="rentSector" required>
+                <option value="">-- Choose Sector / Phase --</option>
+                <optgroup label="📍 Chandigarh Sectors">
+                  <option value="Sector 7">Sector 7</option>
+                  <option value="Sector 8">Sector 8</option>
+                  <option value="Sector 9">Sector 9</option>
+                  <option value="Sector 10">Sector 10</option>
+                  <option value="Sector 11">Sector 11</option>
+                  <option value="Sector 14 (PU)">Sector 14 (Panjab University)</option>
+                  <option value="Sector 15">Sector 15 (Student Hub)</option>
+                  <option value="Sector 16">Sector 16</option>
+                  <option value="Sector 17">Sector 17 (City Center)</option>
+                  <option value="Sector 18">Sector 18</option>
+                  <option value="Sector 19">Sector 19</option>
+                  <option value="Sector 20">Sector 20</option>
+                  <option value="Sector 21">Sector 21</option>
+                  <option value="Sector 22">Sector 22 (Market Hub)</option>
+                  <option value="Sector 23">Sector 23</option>
+                  <option value="Sector 24">Sector 24</option>
+                  <option value="Sector 26">Sector 26</option>
+                  <option value="Sector 27">Sector 27</option>
+                  <option value="Sector 28">Sector 28</option>
+                  <option value="Sector 32">Sector 32 (GMCH Hospital Area)</option>
+                  <option value="Sector 33">Sector 33</option>
+                  <option value="Sector 34">Sector 34 (Coaching Hub)</option>
+                  <option value="Sector 35">Sector 35 (Commercial Hub)</option>
+                  <option value="Sector 36">Sector 36</option>
+                  <option value="Sector 37">Sector 37</option>
+                  <option value="Sector 38">Sector 38</option>
+                  <option value="Sector 40">Sector 40</option>
+                  <option value="Sector 41">Sector 41</option>
+                  <option value="Sector 42">Sector 42</option>
+                  <option value="Sector 43">Sector 43 (ISBT Area)</option>
+                  <option value="Sector 44">Sector 44</option>
+                  <option value="Sector 45">Sector 45</option>
+                  <option value="Sector 46">Sector 46</option>
+                  <option value="Sector 47">Sector 47</option>
+                  <option value="Sector 48">Sector 48</option>
+                  <option value="Sector 49">Sector 49</option>
+                  <option value="Sector 50">Sector 50</option>
+                  <option value="Manimajra">Manimajra</option>
+                  <option value="Industrial Area Ph 1">Industrial Area Ph 1</option>
+                </optgroup>
+                <optgroup label="📍 Mohali Phases & Sectors">
+                  <option value="Phase 1 Mohali">Phase 1 Mohali</option>
+                  <option value="Phase 2 Mohali">Phase 2 Mohali</option>
+                  <option value="Phase 3B1 Mohali">Phase 3B1 Mohali</option>
+                  <option value="Phase 3B2 Mohali">Phase 3B2 Mohali (Market Hub)</option>
+                  <option value="Phase 4 Mohali">Phase 4 Mohali</option>
+                  <option value="Phase 5 Mohali">Phase 5 Mohali</option>
+                  <option value="Phase 7 Mohali">Phase 7 Mohali</option>
+                  <option value="Phase 8 Mohali">Phase 8 Mohali</option>
+                  <option value="Phase 9 Mohali">Phase 9 Mohali</option>
+                  <option value="Phase 10 Mohali">Phase 10 Mohali</option>
+                  <option value="Phase 11 Mohali">Phase 11 Mohali</option>
+                  <option value="Sector 67 Mohali">Sector 67 Mohali</option>
+                  <option value="Sector 68 Mohali">Sector 68 Mohali</option>
+                  <option value="Sector 69 Mohali">Sector 69 Mohali</option>
+                  <option value="Sector 70 Mohali">Sector 70 Mohali</option>
+                  <option value="Sector 71 Mohali">Sector 71 Mohali</option>
+                  <option value="Sector 82 IT City">Sector 82 IT City Mohali</option>
+                  <option value="Sector 125 Kharar">Sector 125 Kharar (Sunny Enclave)</option>
+                  <option value="Kharar Highway">Kharar Highway</option>
+                  <option value="Aerocity Mohali">Aerocity Mohali</option>
+                  <option value="Landran">Landran</option>
+                </optgroup>
+                <optgroup label="📍 Panchkula & Suburbs">
+                  <option value="Sector 4 Panchkula">Sector 4 Panchkula</option>
+                  <option value="Sector 7 Panchkula">Sector 7 Panchkula</option>
+                  <option value="Sector 8 Panchkula">Sector 8 Panchkula</option>
+                  <option value="Sector 9 Panchkula">Sector 9 Panchkula</option>
+                  <option value="Sector 11 Panchkula">Sector 11 Panchkula</option>
+                  <option value="Sector 15 Panchkula">Sector 15 Panchkula</option>
+                  <option value="Sector 20 Panchkula">Sector 20 Panchkula</option>
+                  <option value="Zirakpur">Zirakpur</option>
+                </optgroup>
+                <option value="Other">➕ Other (Custom Sub-Location / House #)</option>
+              </select>
+              <input type="text" id="rentSectorCustom" placeholder="e.g. Near Sector 22 Market, House #140" style="display: none; margin-top: 6px;">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Property / Room Type</label>
+              <select id="rentBhk" required>
+                <option value="1BHK">1 BHK Flat / Floor</option>
+                <option value="2BHK">2 BHK Flat / Floor</option>
+                <option value="3BHK">3 BHK Flat / Floor</option>
+                <option value="1RK">1 RK / Studio</option>
+                <option value="PG">PG / Shared Room</option>
+                <option value="Independent House">Independent House</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Monthly Rent (₹)</label>
+              <input type="number" id="rentAmount" placeholder="e.g. 18000" min="2000" max="200000" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Maintenance Cost (₹/mo)</label>
+              <input type="number" id="rentMaintenance" placeholder="e.g. 1000 (0 if included)" value="0">
+            </div>
+            <div class="form-group">
+              <label>Furnishing Status</label>
+              <select id="rentFurnished">
+                <option value="Semi-Furnished">Semi-Furnished</option>
+                <option value="Fully Furnished">Fully Furnished</option>
+                <option value="Unfurnished">Unfurnished</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gated Society?</label>
+              <select id="rentGated">
+                <option value="Yes">Yes (Gated / Security)</option>
+                <option value="No">No (Independent / Open sector)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Landlord Experience Rating</label>
+              <select id="rentRating">
+                <option value="5">⭐⭐⭐⭐⭐ 5/5 Great Landlord</option>
+                <option value="4">⭐⭐⭐⭐ 4/5 Good</option>
+                <option value="3">⭐⭐⭐ 3/5 Average</option>
+                <option value="2">⭐⭐ 2/5 Strict/Troublesome</option>
+                <option value="1">⭐ 1/5 High Maintenance / Deposit Hassles</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Honest Renter Review / Tips</label>
+            <textarea id="rentReview" rows="3" placeholder="e.g. Electricity bill on commercial rate, good water supply, landlord lives upstairs..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Location Selection</label>
+            <button type="button" class="btn btn-tertiary btn-sm" id="btnPickRentLoc">📍 Use Current Map Center</button>
+            <span class="location-coord-badge" id="rentCoordsText">Selected: Center Map</span>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-tertiary" data-close="modalDropRent">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Rent Pin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. LIST FLAT / FIND FLATMATE MODAL -->
+  <div class="modal-backdrop" id="modalListFlat">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🔵 List Flat / Room (Zero Brokerage)</h3>
+        <button class="modal-close" data-close="modalListFlat">&times;</button>
+      </div>
+      <form id="formListFlat">
+        <div class="modal-body">
+          <p class="modal-subtitle">Are you a property owner or existing tenant looking for a flatmate? Direct contacts only.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>City / Area</label>
+              <select id="ownerCity" required>
+                <option value="Chandigarh">Chandigarh</option>
+                <option value="Mohali">Mohali</option>
+                <option value="Panchkula">Panchkula</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Listing Purpose</label>
+              <select id="ownerType" required>
+                <option value="Whole Flat">Whole Flat / House for Rent</option>
+                <option value="Room in Shared Flat">Room in Shared Flat (Flatmate)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Sector / Phase</label>
+            <select id="ownerSector" required>
+                <option value="">-- Choose Sector / Phase --</option>
+                <optgroup label="📍 Chandigarh Sectors">
+                  <option value="Sector 7">Sector 7</option>
+                  <option value="Sector 8">Sector 8</option>
+                  <option value="Sector 9">Sector 9</option>
+                  <option value="Sector 10">Sector 10</option>
+                  <option value="Sector 11">Sector 11</option>
+                  <option value="Sector 14 (PU)">Sector 14 (Panjab University)</option>
+                  <option value="Sector 15">Sector 15 (Student Hub)</option>
+                  <option value="Sector 16">Sector 16</option>
+                  <option value="Sector 17">Sector 17 (City Center)</option>
+                  <option value="Sector 18">Sector 18</option>
+                  <option value="Sector 19">Sector 19</option>
+                  <option value="Sector 20">Sector 20</option>
+                  <option value="Sector 21">Sector 21</option>
+                  <option value="Sector 22">Sector 22 (Market Hub)</option>
+                  <option value="Sector 23">Sector 23</option>
+                  <option value="Sector 24">Sector 24</option>
+                  <option value="Sector 26">Sector 26</option>
+                  <option value="Sector 27">Sector 27</option>
+                  <option value="Sector 28">Sector 28</option>
+                  <option value="Sector 32">Sector 32 (GMCH Hospital Area)</option>
+                  <option value="Sector 33">Sector 33</option>
+                  <option value="Sector 34">Sector 34 (Coaching Hub)</option>
+                  <option value="Sector 35">Sector 35 (Commercial Hub)</option>
+                  <option value="Sector 36">Sector 36</option>
+                  <option value="Sector 37">Sector 37</option>
+                  <option value="Sector 38">Sector 38</option>
+                  <option value="Sector 40">Sector 40</option>
+                  <option value="Sector 41">Sector 41</option>
+                  <option value="Sector 42">Sector 42</option>
+                  <option value="Sector 43">Sector 43 (ISBT Area)</option>
+                  <option value="Sector 44">Sector 44</option>
+                  <option value="Sector 45">Sector 45</option>
+                  <option value="Sector 46">Sector 46</option>
+                  <option value="Sector 47">Sector 47</option>
+                  <option value="Sector 48">Sector 48</option>
+                  <option value="Sector 49">Sector 49</option>
+                  <option value="Sector 50">Sector 50</option>
+                  <option value="Manimajra">Manimajra</option>
+                  <option value="Industrial Area Ph 1">Industrial Area Ph 1</option>
+                </optgroup>
+                <optgroup label="📍 Mohali Phases & Sectors">
+                  <option value="Phase 1 Mohali">Phase 1 Mohali</option>
+                  <option value="Phase 2 Mohali">Phase 2 Mohali</option>
+                  <option value="Phase 3B1 Mohali">Phase 3B1 Mohali</option>
+                  <option value="Phase 3B2 Mohali">Phase 3B2 Mohali (Market Hub)</option>
+                  <option value="Phase 4 Mohali">Phase 4 Mohali</option>
+                  <option value="Phase 5 Mohali">Phase 5 Mohali</option>
+                  <option value="Phase 7 Mohali">Phase 7 Mohali</option>
+                  <option value="Phase 8 Mohali">Phase 8 Mohali</option>
+                  <option value="Phase 9 Mohali">Phase 9 Mohali</option>
+                  <option value="Phase 10 Mohali">Phase 10 Mohali</option>
+                  <option value="Phase 11 Mohali">Phase 11 Mohali</option>
+                  <option value="Sector 67 Mohali">Sector 67 Mohali</option>
+                  <option value="Sector 68 Mohali">Sector 68 Mohali</option>
+                  <option value="Sector 69 Mohali">Sector 69 Mohali</option>
+                  <option value="Sector 70 Mohali">Sector 70 Mohali</option>
+                  <option value="Sector 71 Mohali">Sector 71 Mohali</option>
+                  <option value="Sector 82 IT City">Sector 82 IT City Mohali</option>
+                  <option value="Sector 125 Kharar">Sector 125 Kharar (Sunny Enclave)</option>
+                  <option value="Kharar Highway">Kharar Highway</option>
+                  <option value="Aerocity Mohali">Aerocity Mohali</option>
+                  <option value="Landran">Landran</option>
+                </optgroup>
+                <optgroup label="📍 Panchkula & Suburbs">
+                  <option value="Sector 4 Panchkula">Sector 4 Panchkula</option>
+                  <option value="Sector 7 Panchkula">Sector 7 Panchkula</option>
+                  <option value="Sector 8 Panchkula">Sector 8 Panchkula</option>
+                  <option value="Sector 9 Panchkula">Sector 9 Panchkula</option>
+                  <option value="Sector 11 Panchkula">Sector 11 Panchkula</option>
+                  <option value="Sector 15 Panchkula">Sector 15 Panchkula</option>
+                  <option value="Sector 20 Panchkula">Sector 20 Panchkula</option>
+                  <option value="Zirakpur">Zirakpur</option>
+                </optgroup>
+                <option value="Other">➕ Other (Custom Sub-Location / House #)</option>
+              </select>
+              <input type="text" id="ownerSectorCustom" placeholder="e.g. Near Sector 35 Market, House #140" style="display: none; margin-top: 6px;">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>BHK Configuration</label>
+              <select id="ownerBhk" required>
+                <option value="1BHK">1 BHK</option>
+                <option value="2BHK">2 BHK</option>
+                <option value="3BHK">3 BHK</option>
+                <option value="1RK">1 RK / Studio</option>
+                <option value="PG">Single Room in PG</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Monthly Rent (₹)</label>
+              <input type="number" id="ownerRent" placeholder="e.g. 22000" min="3000" max="300000" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Security Deposit (₹)</label>
+              <input type="number" id="ownerDeposit" placeholder="e.g. 1 Month Rent" value="20000">
+            </div>
+            <div class="form-group">
+              <label>Preferred Tenant</label>
+              <select id="ownerTenantPref">
+                <option value="Any">Anyone (Family / Bachelors)</option>
+                <option value="Family Only">Family Only</option>
+                <option value="Working Professionals">Working Professionals</option>
+                <option value="Students / PU Bachelors">Students / PU Bachelors</option>
+                <option value="Female Only">Female Only</option>
+                <option value="Male Only">Male Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Key Features & Description</label>
+            <textarea id="ownerDesc" rows="3" placeholder="e.g. Newly painted, AC installed, modular kitchen, near Market and ISBT..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Upload Flat Photo (Optional)</label>
+            <input type="file" id="ownerPhoto" accept="image/*">
+            <small class="help-text">Attach a photo of the flat, room, or building.</small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Contact Phone / WhatsApp</label>
+              <input type="tel" id="ownerPhone" placeholder="e.g. 9876543210" required>
+            </div>
+            <div class="form-group">
+              <label>Contact Name</label>
+              <input type="text" id="ownerName" placeholder="e.g. Gurpreet Singh" required>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-tertiary" data-close="modalListFlat">Cancel</button>
+          <button type="submit" class="btn btn-primary">Publish Listing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. DROP SEEKER PIN MODAL -->
+  <div class="modal-backdrop" id="modalDropSeeker">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🟣 Drop Flat Seeker Pin</h3>
+        <button class="modal-close" data-close="modalDropSeeker">&times;</button>
+      </div>
+      <form id="formDropSeeker">
+        <div class="modal-body">
+          <p class="modal-subtitle">Looking for a home in Chandigarh or Mohali? Drop your requirements so owners can contact you directly.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Target City / Area</label>
+              <select id="seekerCity" required>
+                <option value="Chandigarh">Chandigarh (Near PU / Sectors)</option>
+                <option value="Mohali">Mohali (Phases / IT Park / Sectors)</option>
+                <option value="Panchkula">Panchkula</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preferred Sector / Phase</label>
+              <select id="seekerSector" required>
+                <option value="">-- Choose Sector / Phase --</option>
+                <optgroup label="📍 Chandigarh Sectors">
+                  <option value="Sector 7">Sector 7</option>
+                  <option value="Sector 8">Sector 8</option>
+                  <option value="Sector 9">Sector 9</option>
+                  <option value="Sector 10">Sector 10</option>
+                  <option value="Sector 11">Sector 11</option>
+                  <option value="Sector 14 (PU)">Sector 14 (Panjab University)</option>
+                  <option value="Sector 15">Sector 15 (Student Hub)</option>
+                  <option value="Sector 16">Sector 16</option>
+                  <option value="Sector 17">Sector 17 (City Center)</option>
+                  <option value="Sector 18">Sector 18</option>
+                  <option value="Sector 19">Sector 19</option>
+                  <option value="Sector 20">Sector 20</option>
+                  <option value="Sector 21">Sector 21</option>
+                  <option value="Sector 22">Sector 22 (Market Hub)</option>
+                  <option value="Sector 23">Sector 23</option>
+                  <option value="Sector 24">Sector 24</option>
+                  <option value="Sector 26">Sector 26</option>
+                  <option value="Sector 27">Sector 27</option>
+                  <option value="Sector 28">Sector 28</option>
+                  <option value="Sector 32">Sector 32 (GMCH Hospital Area)</option>
+                  <option value="Sector 33">Sector 33</option>
+                  <option value="Sector 34">Sector 34 (Coaching Hub)</option>
+                  <option value="Sector 35">Sector 35 (Commercial Hub)</option>
+                  <option value="Sector 36">Sector 36</option>
+                  <option value="Sector 37">Sector 37</option>
+                  <option value="Sector 38">Sector 38</option>
+                  <option value="Sector 40">Sector 40</option>
+                  <option value="Sector 41">Sector 41</option>
+                  <option value="Sector 42">Sector 42</option>
+                  <option value="Sector 43">Sector 43 (ISBT Area)</option>
+                  <option value="Sector 44">Sector 44</option>
+                  <option value="Sector 45">Sector 45</option>
+                  <option value="Sector 46">Sector 46</option>
+                  <option value="Sector 47">Sector 47</option>
+                  <option value="Sector 48">Sector 48</option>
+                  <option value="Sector 49">Sector 49</option>
+                  <option value="Sector 50">Sector 50</option>
+                  <option value="Manimajra">Manimajra</option>
+                  <option value="Industrial Area Ph 1">Industrial Area Ph 1</option>
+                </optgroup>
+                <optgroup label="📍 Mohali Phases & Sectors">
+                  <option value="Phase 1 Mohali">Phase 1 Mohali</option>
+                  <option value="Phase 2 Mohali">Phase 2 Mohali</option>
+                  <option value="Phase 3B1 Mohali">Phase 3B1 Mohali</option>
+                  <option value="Phase 3B2 Mohali">Phase 3B2 Mohali (Market Hub)</option>
+                  <option value="Phase 4 Mohali">Phase 4 Mohali</option>
+                  <option value="Phase 5 Mohali">Phase 5 Mohali</option>
+                  <option value="Phase 7 Mohali">Phase 7 Mohali</option>
+                  <option value="Phase 8 Mohali">Phase 8 Mohali</option>
+                  <option value="Phase 9 Mohali">Phase 9 Mohali</option>
+                  <option value="Phase 10 Mohali">Phase 10 Mohali</option>
+                  <option value="Phase 11 Mohali">Phase 11 Mohali</option>
+                  <option value="Sector 67 Mohali">Sector 67 Mohali</option>
+                  <option value="Sector 68 Mohali">Sector 68 Mohali</option>
+                  <option value="Sector 69 Mohali">Sector 69 Mohali</option>
+                  <option value="Sector 70 Mohali">Sector 70 Mohali</option>
+                  <option value="Sector 71 Mohali">Sector 71 Mohali</option>
+                  <option value="Sector 82 IT City">Sector 82 IT City Mohali</option>
+                  <option value="Sector 125 Kharar">Sector 125 Kharar (Sunny Enclave)</option>
+                  <option value="Kharar Highway">Kharar Highway</option>
+                  <option value="Aerocity Mohali">Aerocity Mohali</option>
+                  <option value="Landran">Landran</option>
+                </optgroup>
+                <optgroup label="📍 Panchkula & Suburbs">
+                  <option value="Sector 4 Panchkula">Sector 4 Panchkula</option>
+                  <option value="Sector 7 Panchkula">Sector 7 Panchkula</option>
+                  <option value="Sector 8 Panchkula">Sector 8 Panchkula</option>
+                  <option value="Sector 9 Panchkula">Sector 9 Panchkula</option>
+                  <option value="Sector 11 Panchkula">Sector 11 Panchkula</option>
+                  <option value="Sector 15 Panchkula">Sector 15 Panchkula</option>
+                  <option value="Sector 20 Panchkula">Sector 20 Panchkula</option>
+                  <option value="Zirakpur">Zirakpur</option>
+                </optgroup>
+                <option value="Other">➕ Other (Custom Sub-Location / House #)</option>
+              </select>
+              <input type="text" id="seekerSectorCustom" placeholder="e.g. Near Sector 15 Student Hub, House #45" style="display: none; margin-top: 6px;">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Required BHK</label>
+              <select id="seekerBhk" required>
+                <option value="1BHK">1 BHK</option>
+                <option value="2BHK">2 BHK</option>
+                <option value="3BHK">3 BHK</option>
+                <option value="1RK">1 RK / Studio</option>
+                <option value="PG">Room in Shared Flat / PG</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Max Budget (₹/mo)</label>
+              <input type="number" id="seekerBudget" placeholder="e.g. 15000" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Expected Move-in Date</label>
+              <input type="date" id="seekerMoveDate" required>
+            </div>
+            <div class="form-group">
+              <label>Occupant Profile</label>
+              <select id="seekerProfile">
+                <option value="Student">Student (PU / PEC / Chitkara / CU)</option>
+                <option value="IT Professional">IT Professional (Mohali IT Park)</option>
+                <option value="Family">Family</option>
+                <option value="Working Professional">Working Professional</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Your Name</label>
+              <input type="text" id="seekerName" placeholder="e.g. Aman Sharma" required>
+            </div>
+            <div class="form-group">
+              <label>Contact Phone / Email</label>
+              <input type="text" id="seekerContact" placeholder="e.g. 9812345678 or aman@email.com" required>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-tertiary" data-close="modalDropSeeker">Cancel</button>
+          <button type="submit" class="btn btn-primary">Post Seeker Requirement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. SPOT TO-LET BOARD MODAL -->
+  <div class="modal-backdrop" id="modalSpotToLet">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🟡 Spot a "To-Let" Signboard</h3>
+        <button class="modal-close" data-close="modalSpotToLet">&times;</button>
+      </div>
+      <form id="formSpotToLet">
+        <div class="modal-body">
+          <p class="modal-subtitle">Walked past a house with a To-Let board in Chandigarh or Mohali? Upload the board details to help fellow renters skip brokers!</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>City / Area</label>
+              <select id="toletCity" required>
+                <option value="Chandigarh">Chandigarh</option>
+                <option value="Mohali">Mohali</option>
+                <option value="Panchkula">Panchkula</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Owner Phone Number on Board</label>
+              <input type="tel" id="toletPhone" placeholder="e.g. 9872001122" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Sector / Phase Location</label>
+            <select id="toletSector" required>
+                <option value="">-- Choose Sector / Phase --</option>
+                <optgroup label="📍 Chandigarh Sectors">
+                  <option value="Sector 7">Sector 7</option>
+                  <option value="Sector 8">Sector 8</option>
+                  <option value="Sector 9">Sector 9</option>
+                  <option value="Sector 10">Sector 10</option>
+                  <option value="Sector 11">Sector 11</option>
+                  <option value="Sector 14 (PU)">Sector 14 (Panjab University)</option>
+                  <option value="Sector 15">Sector 15 (Student Hub)</option>
+                  <option value="Sector 16">Sector 16</option>
+                  <option value="Sector 17">Sector 17 (City Center)</option>
+                  <option value="Sector 18">Sector 18</option>
+                  <option value="Sector 19">Sector 19</option>
+                  <option value="Sector 20">Sector 20</option>
+                  <option value="Sector 21">Sector 21</option>
+                  <option value="Sector 22">Sector 22 (Market Hub)</option>
+                  <option value="Sector 23">Sector 23</option>
+                  <option value="Sector 24">Sector 24</option>
+                  <option value="Sector 26">Sector 26</option>
+                  <option value="Sector 27">Sector 27</option>
+                  <option value="Sector 28">Sector 28</option>
+                  <option value="Sector 32">Sector 32 (GMCH Hospital Area)</option>
+                  <option value="Sector 33">Sector 33</option>
+                  <option value="Sector 34">Sector 34 (Coaching Hub)</option>
+                  <option value="Sector 35">Sector 35 (Commercial Hub)</option>
+                  <option value="Sector 36">Sector 36</option>
+                  <option value="Sector 37">Sector 37</option>
+                  <option value="Sector 38">Sector 38</option>
+                  <option value="Sector 40">Sector 40</option>
+                  <option value="Sector 41">Sector 41</option>
+                  <option value="Sector 42">Sector 42</option>
+                  <option value="Sector 43">Sector 43 (ISBT Area)</option>
+                  <option value="Sector 44">Sector 44</option>
+                  <option value="Sector 45">Sector 45</option>
+                  <option value="Sector 46">Sector 46</option>
+                  <option value="Sector 47">Sector 47</option>
+                  <option value="Sector 48">Sector 48</option>
+                  <option value="Sector 49">Sector 49</option>
+                  <option value="Sector 50">Sector 50</option>
+                  <option value="Manimajra">Manimajra</option>
+                  <option value="Industrial Area Ph 1">Industrial Area Ph 1</option>
+                </optgroup>
+                <optgroup label="📍 Mohali Phases & Sectors">
+                  <option value="Phase 1 Mohali">Phase 1 Mohali</option>
+                  <option value="Phase 2 Mohali">Phase 2 Mohali</option>
+                  <option value="Phase 3B1 Mohali">Phase 3B1 Mohali</option>
+                  <option value="Phase 3B2 Mohali">Phase 3B2 Mohali (Market Hub)</option>
+                  <option value="Phase 4 Mohali">Phase 4 Mohali</option>
+                  <option value="Phase 5 Mohali">Phase 5 Mohali</option>
+                  <option value="Phase 7 Mohali">Phase 7 Mohali</option>
+                  <option value="Phase 8 Mohali">Phase 8 Mohali</option>
+                  <option value="Phase 9 Mohali">Phase 9 Mohali</option>
+                  <option value="Phase 10 Mohali">Phase 10 Mohali</option>
+                  <option value="Phase 11 Mohali">Phase 11 Mohali</option>
+                  <option value="Sector 67 Mohali">Sector 67 Mohali</option>
+                  <option value="Sector 68 Mohali">Sector 68 Mohali</option>
+                  <option value="Sector 69 Mohali">Sector 69 Mohali</option>
+                  <option value="Sector 70 Mohali">Sector 70 Mohali</option>
+                  <option value="Sector 71 Mohali">Sector 71 Mohali</option>
+                  <option value="Sector 82 IT City">Sector 82 IT City Mohali</option>
+                  <option value="Sector 125 Kharar">Sector 125 Kharar (Sunny Enclave)</option>
+                  <option value="Kharar Highway">Kharar Highway</option>
+                  <option value="Aerocity Mohali">Aerocity Mohali</option>
+                  <option value="Landran">Landran</option>
+                </optgroup>
+                <optgroup label="📍 Panchkula & Suburbs">
+                  <option value="Sector 4 Panchkula">Sector 4 Panchkula</option>
+                  <option value="Sector 7 Panchkula">Sector 7 Panchkula</option>
+                  <option value="Sector 8 Panchkula">Sector 8 Panchkula</option>
+                  <option value="Sector 9 Panchkula">Sector 9 Panchkula</option>
+                  <option value="Sector 11 Panchkula">Sector 11 Panchkula</option>
+                  <option value="Sector 15 Panchkula">Sector 15 Panchkula</option>
+                  <option value="Sector 20 Panchkula">Sector 20 Panchkula</option>
+                  <option value="Zirakpur">Zirakpur</option>
+                </optgroup>
+                <option value="Other">➕ Other (Custom Sub-Location / House #)</option>
+              </select>
+              <input type="text" id="toletSectorCustom" placeholder="e.g. Near Sector 22 Market, House #1200" style="display: none; margin-top: 6px;">
+            </div>
+            <div class="form-group">
+              <label>Owner Phone Number on Board</label>
+              <input type="tel" id="toletPhone" placeholder="e.g. 9872001122" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Property Mentioned (if any)</label>
+              <select id="toletBhk">
+                <option value="1BHK">1 BHK / 1 Room</option>
+                <option value="2BHK">2 BHK / Floor</option>
+                <option value="3BHK">3 BHK / Kothi</option>
+                <option value="PG">PG / Girls / Boys</option>
+                <option value="Unknown">Not Specified on Board</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Estimated Rent / Note</label>
+              <input type="text" id="toletNotes" placeholder="e.g. Board says 'First Floor 2BHK Available'">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Upload Photo of Board (Optional)</label>
+            <input type="file" id="toletPhoto" accept="image/*">
+            <small class="help-text">Face/Number-plate photos are auto-filtered for privacy.</small>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-tertiary" data-close="modalSpotToLet">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Spotted Board</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. AREA RENT STATS MODAL -->
+  <div class="modal-backdrop" id="modalAreaStats">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">📊 Tricity Rental Intelligence & Sector Benchmark</h3>
+        <button class="modal-close" data-close="modalAreaStats">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="stats-overview-grid">
+          <div class="stat-box">
+            <h4>Avg 1BHK Rent</h4>
+            <span class="stat-number" id="statsAvg1BHK">₹11,500</span>
+            <span class="stat-sub">Range: ₹8,000 - ₹16,000</span>
+          </div>
+          <div class="stat-box">
+            <h4>Avg 2BHK Rent</h4>
+            <span class="stat-number" id="statsAvg2BHK">₹21,000</span>
+            <span class="stat-sub">Range: ₹15,000 - ₹28,000</span>
+          </div>
+          <div class="stat-box">
+            <h4>Avg 3BHK Rent</h4>
+            <span class="stat-number" id="statsAvg3BHK">₹32,500</span>
+            <span class="stat-sub">Range: ₹24,000 - ₹45,000</span>
+          </div>
+          <div class="stat-box">
+            <h4>Landlord Sentiment</h4>
+            <span class="stat-number" id="statsLandlordRating">4.2 / 5</span>
+            <span class="stat-sub">Based on 120+ renter reviews</span>
+          </div>
+        </div>
+
+        <div class="sector-comparison-table-wrapper">
+          <h4 class="table-title">Sector-wise Rent Benchmark (Chandigarh & Mohali)</h4>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Sector / Phase</th>
+                <th>Area Type</th>
+                <th>1 BHK Avg</th>
+                <th>2 BHK Avg</th>
+                <th>3 BHK Avg</th>
+                <th>Gated %</th>
+              </tr>
+            </thead>
+            <tbody id="sectorStatsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-close="modalAreaStats">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- App Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/matching.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
