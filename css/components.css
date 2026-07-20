@@ -455,6 +455,67 @@
   }
 }
 
+/* Center Screen Pin Overlay for Location Picker */
+.map-picker-center-pin {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  z-index: 2500;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.map-picker-center-pin.show {
+  opacity: 1;
+}
+
+.map-picker-center-pin.lifting {
+  transform: translate(-50%, -125%) scale(1.12);
+}
+
+.picker-pin-icon {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+  animation: floatPin 2s infinite ease-in-out;
+}
+
+.picker-pin-shadow {
+  width: 20px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  margin-top: -6px;
+  filter: blur(2px);
+}
+
+.picker-pin-pulse {
+  position: absolute;
+  bottom: -4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.35);
+  border: 2px solid #10b981;
+  animation: pulseRing 1.6s infinite ease-out;
+}
+
+@keyframes floatPin {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
 .location-coord-badge {
   font-size: 0.76rem;
   font-family: var(--font-mono);

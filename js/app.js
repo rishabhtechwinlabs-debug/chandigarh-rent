@@ -369,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTargetSpanForPicker = null;
   const mapPickerBanner = document.getElementById('mapPickerBanner');
   const mapPickerCoordsText = document.getElementById('mapPickerCoordsText');
+  const mapPickerCenterPin = document.getElementById('mapPickerCenterPin');
 
   // 1. Handle "Use GPS" Button
   document.querySelectorAll('.btn-use-gps').forEach(btn => {
@@ -395,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 2. Handle "Pick on map" Button (Opens smooth map overlay banner, no alert popups!)
+  // 2. Handle "Pick on map" Button (Shows smooth top banner AND center target pin!)
   document.querySelectorAll('.btn-pick-map').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -408,15 +409,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const center = mapManager.getCenter();
       mapPickerCoordsText.textContent = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
-      mapPickerBanner.classList.add('show');
+      mapPickerBanner?.classList.add('show');
+      mapPickerCenterPin?.classList.add('show');
     });
   });
 
-  // Update banner coordinates text live as map pans
+  // Update banner coordinates text live as map moves & lift center pin while dragging
+  mapManager.map.on('movestart', () => {
+    if (mapPickerBanner && mapPickerBanner.classList.contains('show')) {
+      mapPickerCenterPin?.classList.add('lifting');
+    }
+  });
+
   mapManager.map.on('move', () => {
     if (mapPickerBanner && mapPickerBanner.classList.contains('show')) {
       const center = mapManager.getCenter();
       mapPickerCoordsText.textContent = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
+    }
+  });
+
+  mapManager.map.on('moveend', () => {
+    if (mapPickerBanner && mapPickerBanner.classList.contains('show')) {
+      mapPickerCenterPin?.classList.remove('lifting');
+    }
+  });
+
+  // Click anywhere on map to instantly fly center pin to that point
+  mapManager.map.on('click', (e) => {
+    if (mapPickerBanner && mapPickerBanner.classList.contains('show')) {
+      mapManager.flyToLocation(e.latlng.lat, e.latlng.lng);
     }
   });
 
@@ -427,7 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activeTargetSpanForPicker) {
       activeTargetSpanForPicker.textContent = `· ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
     }
-    mapPickerBanner.classList.remove('show');
+    mapPickerBanner?.classList.remove('show');
+    mapPickerCenterPin?.classList.remove('show');
     if (activeModalForPicker) {
       openModal(activeModalForPicker);
     }
@@ -435,7 +457,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Cancel Map Picker
   document.getElementById('btnCancelMapPicker')?.addEventListener('click', () => {
-    mapPickerBanner.classList.remove('show');
+    mapPickerBanner?.classList.remove('show');
+    mapPickerCenterPin?.classList.remove('show');
     if (activeModalForPicker) {
       openModal(activeModalForPicker);
     }
