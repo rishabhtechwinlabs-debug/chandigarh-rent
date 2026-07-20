@@ -701,6 +701,54 @@
             </div>
           </div>
 
+          <!-- Pets Allowed Options -->
+          <div class="form-group">
+            <label>Pets allowed? <span class="help-text">(optional)</span></label>
+            <div class="pill-group" id="ownerPetsGroup">
+              <label class="pill-btn">
+                <input type="radio" name="ownerPets" value="Yes"> 🐕 Yes
+              </label>
+              <label class="pill-btn">
+                <input type="radio" name="ownerPets" value="No"> 🚫 No
+              </label>
+              <label class="pill-btn active">
+                <input type="radio" name="ownerPets" value="Not sure" checked> 🤷 Not sure
+              </label>
+            </div>
+          </div>
+
+          <!-- Parking & Square Footage Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>🚗 Parking for <span class="required-star">*</span></label>
+              <div class="input-suffix-wrapper">
+                <input type="number" id="ownerParking" placeholder="e.g. 1" min="0" value="1" required>
+                <span class="input-suffix">cars</span>
+              </div>
+              <small class="help-text">Enter 0 if there's no parking. 1 for one spot, 2 for two, and so on.</small>
+            </div>
+            <div class="form-group">
+              <label>Square Footage <span class="help-text">(optional)</span></label>
+              <div class="input-suffix-wrapper">
+                <input type="number" id="ownerSqft" placeholder="e.g. 850">
+                <span class="input-suffix">sq.ft</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label>Your email <span class="help-text">(optional)</span></label>
+            <input type="email" id="ownerEmail" placeholder="e.g. you@gmail.com">
+            <small class="help-text">Never shown publicly.</small>
+          </div>
+
+          <!-- One-liner on the stay -->
+          <div class="form-group">
+            <label>One-liner on the stay <span class="help-text">(optional)</span></label>
+            <input type="text" id="ownerOneLiner" placeholder="e.g. Great locality, noisy at night">
+          </div>
+
           <div class="form-group">
             <label>Key Features & Description</label>
             <textarea id="ownerDesc" rows="3" placeholder="e.g. Newly painted, AC installed, modular kitchen, near Market and ISBT..."></textarea>

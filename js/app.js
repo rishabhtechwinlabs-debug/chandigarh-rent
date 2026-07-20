@@ -604,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetCoords = selectedHoldCoords || mapManager.getCenter();
     const photoInput = document.getElementById('ownerPhoto');
     const photoData = photoInput && photoInput.files[0] ? await fileToDataURL(photoInput.files[0]) : null;
+    const selectedPetRadio = document.querySelector('input[name="ownerPets"]:checked');
 
     const newPin = {
       type: 'owner',
@@ -614,6 +615,11 @@ document.addEventListener('DOMContentLoaded', () => {
       rent: Number(amount),
       deposit: Number(document.getElementById('ownerDeposit').value) || 0,
       tenantPref: document.getElementById('ownerTenantPref').value,
+      pets: selectedPetRadio ? selectedPetRadio.value : 'Not sure',
+      parking: Number(document.getElementById('ownerParking').value) || 0,
+      sqft: Number(document.getElementById('ownerSqft').value) || null,
+      email: document.getElementById('ownerEmail')?.value.trim() || '',
+      oneLiner: document.getElementById('ownerOneLiner')?.value.trim() || '',
       desc: document.getElementById('ownerDesc').value,
       phone: phone.trim(),
       contactName: name.trim(),
