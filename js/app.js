@@ -340,6 +340,27 @@ document.addEventListener('DOMContentLoaded', () => {
     openModal('modalAreaStats');
   });
 
+  // How to Use Modal Triggers
+  document.getElementById('btnHowToUse')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modalHowToUse');
+  });
+
+  document.getElementById('btnHeaderHowToUse')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modalHowToUse');
+  });
+
+  document.getElementById('btnSidebarHowToUse')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modalHowToUse');
+  });
+
+  document.getElementById('btnGuideAddPin')?.addEventListener('click', () => {
+    closeModal('modalHowToUse');
+    openModal('modalDropRent');
+  });
+
   // Mobile Bottom Bar Actions
   document.getElementById('mBtnDropRent')?.addEventListener('click', () => openModal('modalDropRent'));
   document.getElementById('mBtnListFlat')?.addEventListener('click', () => openModal('modalListFlat'));

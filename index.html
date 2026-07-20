@@ -149,6 +149,10 @@
         <span class="btn-icon">📊</span> Area Rent Stats
       </button>
 
+      <button class="btn btn-secondary btn-sm" id="btnHeaderHowToUse" title="How to Use Guide">
+        <span class="btn-icon">💡</span> How to Use
+      </button>
+
       <div class="dropdown-container">
         <button class="btn btn-primary btn-sm" id="btnMainAction">
           <span class="btn-icon">➕</span> <span class="main-btn-label">Add Pin</span>
@@ -305,7 +309,7 @@
       <!-- Footer Info -->
       <div class="sidebar-footer">
         <p>⚡ 100% Free & Transparent rental dataset for Chandigarh & Mohali.</p>
-        <p>No login needed · Zero Brokerage</p>
+        <p>No login needed · Zero Brokerage · <a href="#" id="btnSidebarHowToUse" style="color: var(--primary); font-weight:600; text-decoration: underline;">How to Use</a></p>
       </div>
     </aside>
 
@@ -322,6 +326,7 @@
         <button class="map-ctl-btn" id="btnToggleTiles" title="Switch Map Tiles (Dark / Light / Satellite)">🌐 Tiles</button>
         <button class="map-ctl-btn" id="btnToggleHubs" title="Show/Hide Student & IT Commute Radius">🎓 Commute Zones</button>
         <button class="map-ctl-btn" id="btnDrawArea" title="Sector Rent Benchmark">📐 Sector Stats</button>
+        <button class="map-ctl-btn" id="btnHowToUse" title="How to Use chandigarh.rent">❓ How to Use</button>
       </div>
 
       <!-- Bottom Floating Mobile Bar -->
@@ -1270,6 +1275,93 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-close="modalAreaStats">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. HOW TO USE MODAL -->
+  <div class="modal-backdrop" id="modalHowToUse">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">💡 How to Use chandigarh.rent</h3>
+        <button class="modal-close" data-close="modalHowToUse">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="guide-welcome-banner">
+          <div class="welcome-badge">100% Free · Crowdsourced · Zero Brokerage</div>
+          <h4>Welcome to Tricity's Transparent Rental & Flat Finder Map</h4>
+          <p>Find real rent prices paid by actual tenants, discover zero-brokerage owner flats, match with potential flatmates, and spot street To-Let boards in Chandigarh, Mohali, & Panchkula.</p>
+        </div>
+
+        <!-- Section 1: Map Pins Explained -->
+        <div class="guide-section">
+          <h4 class="guide-section-title">📍 Understanding Map Pin Colors</h4>
+          <div class="guide-pins-grid">
+            <div class="guide-pin-card">
+              <div class="pin-badge pin-rent">🟢 Rent Paid</div>
+              <p>Actual monthly rent paid by verified or anonymous tenants. Use this to benchmark fair market prices in any sector.</p>
+            </div>
+            <div class="guide-pin-card">
+              <div class="pin-badge pin-owner">🔵 Available Flat</div>
+              <p>Direct owner listing with zero brokerage fees. View BHK, rent, photos, contact info, and amenities.</p>
+            </div>
+            <div class="guide-pin-card">
+              <div class="pin-badge pin-seeker">🟣 Flatmate Seeker</div>
+              <p>Roommates or tenants looking for a flat or replacement roommate. Match budget & preferences directly.</p>
+            </div>
+            <div class="guide-pin-card">
+              <div class="pin-badge pin-tolet">🟡 Spotted To-Let</div>
+              <p>Crowdsourced photo & contact details of "To-Let" boards spotted physically on street houses and kothis.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Step-by-Step Guide -->
+        <div class="guide-section">
+          <h4 class="guide-section-title">🚀 Quick Start Steps</h4>
+          <div class="guide-steps-list">
+            <div class="guide-step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <strong>Search or Filter your Target Sector</strong>
+                <p>Use the top search bar (e.g., <em>Sector 15, Sector 35, Phase 7 Mohali</em>) or adjust the <strong>Max Rent</strong> slider and <strong>BHK chips</strong> in the sidebar filters.</p>
+              </div>
+            </div>
+            <div class="guide-step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <strong>Explore Map Pins & Click for Details</strong>
+                <p>Click any map pin to view tenant rent breakdown, direct landlord contact details, roommate preferences, or To-Let photos.</p>
+              </div>
+            </div>
+            <div class="guide-step-item">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <strong>Add Your Own Pin (Drop Rent or List Flat)</strong>
+                <p>Click the <strong>➕ Add Pin</strong> button at the top header (or bottom mobile bar) to anonymously report what you pay, list your flat, post a roommate query, or upload a spotted To-Let board.</p>
+              </div>
+            </div>
+            <div class="guide-step-item">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <strong>Use Floating Map Helper Tools</strong>
+                <p>
+                  🎯 <strong>Near Me:</strong> Auto-center using your device GPS.<br>
+                  🌐 <strong>Tiles:</strong> Switch between Dark, Light, & Satellite maps.<br>
+                  🎓 <strong>Commute Zones:</strong> Show PU, Chandigarh University, IT Park Mohali commute radii.<br>
+                  📐 <strong>Sector Stats:</strong> View sector-by-sector rent averages and benchmarks.<br>
+                  ❓ <strong>How to Use:</strong> Open this quick feature guide anytime.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnGuideAddPin">➕ Add My Rent / Listing</button>
+        <button type="button" class="btn btn-primary" data-close="modalHowToUse">Got it, Let's Explore!</button>
       </div>
     </div>
   </div>
